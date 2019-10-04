@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const {apiError, apiSuccess, genPasswordSalt, calcPasswordHash} = require('./utils');
 
+const tokens = {};
+
 exports.register = async function(params) {
   const existingUserCount = await User.countDocuments({
     $or: [{userName: params.userName}, {email: params.email}],
@@ -22,4 +24,21 @@ exports.register = async function(params) {
   });
 
   return apiSuccess();
+};
+
+
+exports.login = async function(params) {
+  const user = await User.findOne({email: params.email});
+  if (!user) {
+    return apiError('Invalid email');
+  }
+  const hash = calcPasswordHash(params.password, String(user.passwordSalt));
+  if (hash === user.passwordSha256 ) {
+    const token = genPasswordSalt();
+    tokens[token] = user.userName;
+    console.log(tokens);
+    return apiSuccess(token);
+  }
+
+  return apiError('Invalid combination of email and password');
 };
