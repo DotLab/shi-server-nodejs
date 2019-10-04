@@ -2,11 +2,11 @@ const User = require('../models/User');
 const {apiError, apiSuccess, genPasswordSalt, calcPasswordHash} = require('./utils');
 
 exports.register = async function(params) {
-  const existingUser = await User.findOne({
+  const existingUserCount = await User.countDocuments({
     $or: [{userName: params.userName}, {email: params.email}],
   });
 
-  if (existingUser) {
+  if (existingUserCount > 0) {
     return apiError('Existing name or email');
   }
 
