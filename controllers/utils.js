@@ -20,10 +20,10 @@ exports.genPasswordSalt = function() {
   return crypto.randomBytes(PASSWORD_SALT_LENGTH).toString(PASSWORD_ENCODING);
 };
 
-exports.genToken = function(len) {
-  if (len === undefined) {
+exports.genSecureRandomString = function(length) {
+  if (length === undefined) {
     return crypto.randomBytes(PASSWORD_SALT_LENGTH).toString(PASSWORD_ENCODING);
-  } else return crypto.randomBytes(len).toString(PASSWORD_ENCODING);
+  } else return crypto.randomBytes(length).toString(PASSWORD_ENCODING);
 };
 
 exports.calcPasswordHash = function(password, salt) {

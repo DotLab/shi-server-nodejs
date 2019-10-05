@@ -1,6 +1,6 @@
 const User = require('../models/User');
-const {apiError, apiSuccess, genPasswordSalt, calcPasswordHash, genToken, updateUser} = require('./utils');
-const {saveToken, validateToken, getId} = require('../tokenService');
+const {apiError, apiSuccess, genPasswordSalt, calcPasswordHash, genSecureRandomString, updateUser} = require('./utils');
+const {saveToken, checkTokenValid, getUserId, createToken, checkLoggedIn} = require('../services/tokenService');
 
 exports.register = async function(params) {
   const existingUserCount = await User.countDocuments({
@@ -31,12 +31,16 @@ exports.login = async function(params) {
   if (!user) {
     return apiError('Invalid email');
   }
+  // if user is logged in, reject login
+  if (checkLoggedIn(user.id)) {
+    return apiError('Already logged in');
+  }
+
   const hash = calcPasswordHash(params.password, user.passwordSalt);
   if (hash !== user.passwordSha256 ) {
     return apiError('Fail');
   } else {
-    const token = genToken();
-    saveToken(token, user.id);
+    const token = createToken(user.id);
     return apiSuccess(token);
   }
 };
