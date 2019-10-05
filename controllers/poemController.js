@@ -98,7 +98,6 @@ exports.unlike = async function(params) {
   const newLike = poem.like;
   newLike.pop(userId);
 
-  console.log(poem);
   await Poem.findByIdAndUpdate(poem.id, {like: newLike, likeCount: newLikeCount});
   return apiSuccess();
 };

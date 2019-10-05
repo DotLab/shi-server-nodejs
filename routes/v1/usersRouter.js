@@ -34,4 +34,14 @@ router.post('/settings/password/change', async (req, res) => {
   }));
 });
 
+
+router.post('/follow', async (req, res) => {
+  const token = String(req.body.token);
+  const followingId = String(req.body.followingId);
+
+  res.json(await userController.followingId({
+    token, followingId,
+  }));
+});
+
 module.exports = router;

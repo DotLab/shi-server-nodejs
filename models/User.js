@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
 module.exports = mongoose.model('User', {
   userName: String,
@@ -7,4 +8,9 @@ module.exports = mongoose.model('User', {
 
   passwordSalt: String,
   passwordSha256: String,
+
+  followingCount: Number,
+  following: [{userId: ObjectId}],
+  followerCount: Number,
+  follower: [{userId: ObjectId}],
 });

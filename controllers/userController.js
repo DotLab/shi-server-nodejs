@@ -20,6 +20,8 @@ exports.register = async function(params) {
     email: params.email,
     passwordSalt: salt,
     passwordSha256: hash,
+    followingCount: 0,
+    followerCount: 0,
   });
 
   return apiSuccess();
@@ -68,4 +70,36 @@ exports.changePassword = async function(params) {
 
     return apiSuccess();
   }
+};
+
+
+exports.follow = async function(params) {
+  const userId = getUserId(params.token);
+
+  if (!userId) {
+    return apiError('Not logged in');
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    return apiError('Fail');
+  }
+
+  const following = await User.findById(params.followingId);
+  if (!following) {
+    return apiError('Invalid following');
+  }
+
+  // user's following count ++, following list push following.id
+  // following's follower count ++, follower list push userId
+  const newFollowingCount = user.followingCount + 1;
+  const newFollowing = user.following;
+  newFollowing.push(params.followingId);
+  await User.findByIdAndUpdate(userId, {followingCount: newFollowingCount, following: newFollowingCount});
+
+  const newFollowerCount = following.followerCount + 1;
+  const newFollower = following.follower;
+  newFollowingCount.push(userId);
+  await User.findByIdAndUpdate(params.followingId, {followerCount: newFollowerCount, follower: newFollower});
+
+  return apiSuccess();
 };
