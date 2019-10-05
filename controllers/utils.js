@@ -32,7 +32,3 @@ exports.calcPasswordHash = function(password, salt) {
   hasher.update(salt);
   return hasher.digest(PASSWORD_ENCODING);
 };
-
-exports.updateUser = function(id, specs) {
-  User.findByIdAndUpdate(id, specs);
-};
