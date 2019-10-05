@@ -9,8 +9,7 @@ exports.create = async function(params) {
   }
   const userId = getUserId(params.token);
   await Poem.create({
-    // for debug purpose
-    // author: params.author,
+
     author: userId,
     title: params.title,
     body: params.body,

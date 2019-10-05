@@ -9,10 +9,6 @@ router.post('/create', async (req, res) => {
   const date = new Date();
   const privacy = String(req.body.privacy);
 
-  // for debug purpose
-  // const author = String(req.body.author);
-
-
   res.json(await poemController.create({
     token, title, body, date, privacy,
   }));
