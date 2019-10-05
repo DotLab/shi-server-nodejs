@@ -13,7 +13,8 @@ exports.create = async function(params) {
     author: userId,
     title: params.title,
     body: params.body,
-    dateUploaded: params.date,
+    dateWritten: params.date,
+    lastEdit: params.date,
     privacy: params.privacy,
   });
   return apiSuccess();
