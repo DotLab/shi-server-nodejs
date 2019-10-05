@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const {apiError, apiSuccess, genPasswordSalt, calcPasswordHash, updateUser} = require('./utils');
+const {apiError, apiSuccess, genPasswordSalt, calcPasswordHash} = require('./utils');
 const {createToken, checkLoggedIn, getUserId} = require('../services/tokenService');
 
 exports.register = async function(params) {
@@ -64,10 +64,8 @@ exports.changePassword = async function(params) {
   } else {
     const newSalt = genPasswordSalt();
     const newHash = calcPasswordHash(params.newPassword, newSalt);
-
     User.findByIdAndUpdate(user.id, {passwordSalt: newSalt, passwordSha256: newHash}, {});
-    // console.log(user.passwordSalt);
-    // console.log(newSalt);
+
     return apiSuccess();
   }
 };
