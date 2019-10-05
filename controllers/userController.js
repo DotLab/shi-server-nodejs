@@ -103,3 +103,35 @@ exports.follow = async function(params) {
 
   return apiSuccess();
 };
+
+
+exports.unfollow = async function(params) {
+  const userId = getUserId(params.token);
+
+  if (!userId) {
+    return apiError('Not logged in');
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    return apiError('Fail');
+  }
+
+  const unfollow = await User.findById(params.unfollowId);
+  if (!unfollow) {
+    return apiError('Invalid user to unfollow');
+  }
+
+  // user's following count ++, following list push following.id
+  // following's follower count ++, follower list push userId
+  const newFollowingCount = user.followingCount - 1;
+  const newFollowing = user.following;
+  newFollowing.pop(params.unfollow);
+  await User.findByIdAndUpdate(userId, {followingCount: newFollowingCount, following: newFollowing});
+
+  const newFollowerCount = unfollow.followerCount - 1;
+  const newFollower = unfollow.follower;
+  newFollower.pop(userId);
+  await User.findByIdAndUpdate(params.unfollowId, {followerCount: newFollowerCount, follower: newFollower});
+
+  return apiSuccess();
+};

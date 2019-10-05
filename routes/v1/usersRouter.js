@@ -44,4 +44,14 @@ router.post('/follow', async (req, res) => {
   }));
 });
 
+
+router.post('/unfollow', async (req, res) => {
+  const token = String(req.body.token);
+  const unfollowId = String(req.body.unfollowId);
+
+  res.json(await userController.unfollow({
+    token, unfollowId,
+  }));
+});
+
 module.exports = router;
