@@ -1,4 +1,5 @@
 const Poem = require('../models/Poem');
+const User = require('../models/User');
 const {apiError, apiSuccess} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
 
@@ -9,7 +10,6 @@ exports.create = async function(params) {
   }
   const userId = getUserId(params.token);
   await Poem.create({
-
     author: userId,
     title: params.title,
     body: params.body,
@@ -100,4 +100,31 @@ exports.unlike = async function(params) {
 
   await Poem.findByIdAndUpdate(poem.id, {like: newLike, likeCount: newLikeCount});
   return apiSuccess();
+};
+
+
+exports.listing = async function(token) {
+  if (!checkTokenValid(token)) {
+    return apiError('You are not logged in');
+  }
+  const userId = getUserId(token);
+
+  if (!userId) {
+    return apiError('Not logged in');
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    return apiError('Fail');
+  }
+
+  // for each of the following User, get their latest 5 poems and send back
+  const following = user.following;
+  const poems = [];
+  for (let i = 0; i < user.followingCount; i++) {
+    const collections = await Poem.find({author: following[i]._id});
+
+    collections.forEach((poem) => poems.push(poem));
+    console.log(poems);
+  }
+  return apiSuccess(poems);
 };
