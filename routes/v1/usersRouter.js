@@ -39,7 +39,7 @@ router.post('/follow', async (req, res) => {
   const token = String(req.body.token);
   const followingId = String(req.body.followingId);
 
-  res.json(await userController.followingId({
+  res.json(await userController.follow({
     token, followingId,
   }));
 });
