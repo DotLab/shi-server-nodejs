@@ -8,5 +8,7 @@ module.exports = mongoose.model('Poem', {
   dateWritten: Date,
   lastEdit: Date,
   public: String,
+  like: [{userId: ObjectId}],
+  likeCount: Number,
 });
 
