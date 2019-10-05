@@ -27,6 +27,10 @@ exports.edit = async function(params) {
   const userId = getUserId(params.token);
   const poem = await Poem.findById(params.poemId);
 
+  if (!poem) {
+    return apiError('Poem does not exist');
+  }
+
   if (userId != poem.author) {
     return apiError('Fail');
   }
@@ -40,3 +44,20 @@ exports.edit = async function(params) {
   return apiSuccess();
 };
 
+
+exports.delete = async function(params) {
+  if (!checkTokenValid(params.token)) {
+    return apiError('You are not logged in');
+  }
+  const userId = getUserId(params.token);
+  const poem = await Poem.findById(params.poemId);
+  if (!poem) {
+    return apiError('Poem does not exist');
+  }
+
+  if (userId != poem.author) {
+    return apiError('Fail');
+  }
+  await Poem.findByIdAndRemove(poem.id);
+  return apiSuccess();
+};
