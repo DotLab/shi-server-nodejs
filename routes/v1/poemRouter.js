@@ -45,4 +45,13 @@ router.post('/like', async (req, res) => {
   }));
 });
 
+
+router.post('/unlike', async (req, res) => {
+  const token = String(req.body.token);
+  const poemId = String(req.body.poemId);
+
+  res.json(await poemController.unlike({
+    token, poemId,
+  }));
+});
 module.exports = router;
