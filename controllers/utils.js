@@ -6,7 +6,6 @@ const PASSWORD_HASHER = 'sha256';
 
 const API_SUCCESS = 'SUCCESS';
 const API_ERROR = 'ERROR';
-const User = require('../models/User');
 
 exports.apiSuccess = function(payload) {
   return {status: API_SUCCESS, payload};
