@@ -31,7 +31,6 @@ exports.checkTokenValid = function(token) {
 
 
 exports.getUserId = function(token) {
-  console.log(tokensToId);
   return tokensToId[token];
 };
 

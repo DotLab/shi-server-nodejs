@@ -24,4 +24,14 @@ router.post('/login', async (req, res) => {
 });
 
 
+router.post('/settings/password/change', async (req, res) => {
+  const currentPassword = String(req.body.currentPassword);
+  const newPassword = String(req.body.newPassword);
+  const token = String(req.body.token);
+
+  res.json(await userController.changePassword({
+    currentPassword, newPassword, token,
+  }));
+});
+
 module.exports = router;
