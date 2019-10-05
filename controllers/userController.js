@@ -65,7 +65,7 @@ exports.changePassword = async function(params) {
     const newSalt = genPasswordSalt();
     const newHash = calcPasswordHash(params.newPassword, newSalt);
 
-    User.findByIdAndUpdate(user.id, {passwordSalt: newSalt, passwordSha256: newHash}, {new: true});
+    User.findByIdAndUpdate(user.id, {passwordSalt: newSalt, passwordSha256: newHash}, {});
     // console.log(user.passwordSalt);
     // console.log(newSalt);
     return apiSuccess();
