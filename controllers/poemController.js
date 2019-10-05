@@ -30,7 +30,7 @@ exports.edit = async function(params) {
   if (userId != poem.author) {
     return apiError('Fail');
   }
-  Poem.findByIdAndUpdate(params.poemId, {
+  await Poem.findByIdAndUpdate(params.poemId, {
 
     title: params.title,
     body: params.body,
@@ -39,3 +39,4 @@ exports.edit = async function(params) {
   });
   return apiSuccess();
 };
+
