@@ -1,7 +1,6 @@
 const User = require('../models/User');
-const {apiError, apiSuccess, genPasswordSalt, calcPasswordHash} = require('./utils');
-
-const tokens = {};
+const {apiError, apiSuccess, genPasswordSalt, calcPasswordHash, genToken, updateUser} = require('./utils');
+const {saveToken, validateToken, getId} = require('../tokenService');
 
 exports.register = async function(params) {
   const existingUserCount = await User.countDocuments({
@@ -32,13 +31,13 @@ exports.login = async function(params) {
   if (!user) {
     return apiError('Invalid email');
   }
-  const hash = calcPasswordHash(params.password, String(user.passwordSalt));
-  if (hash === user.passwordSha256 ) {
-    const token = genPasswordSalt();
-    tokens[token] = user.userName;
-    console.log(tokens);
+  const hash = calcPasswordHash(params.password, user.passwordSalt);
+  if (hash !== user.passwordSha256 ) {
+    return apiError('Fail');
+  } else {
+    const token = genToken();
+    saveToken(token, user.id);
     return apiSuccess(token);
   }
-
-  return apiError('Invalid combination of email and password');
 };
+
