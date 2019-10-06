@@ -66,5 +66,14 @@ router.post('/comment', async (req, res) => {
   res.json(await poemController.comment({
     token, poemId, comment, date,
   }));
-})
-;
+});
+
+
+router.post('/comment/delete', async (req, res) => {
+  const token = String(req.body.token);
+  const commentId = String(req.body.commentId);
+
+  res.json(await poemController.commentDelete({
+    token, commentId,
+  }));
+});

@@ -156,3 +156,30 @@ exports.comment = async function(params) {
   });
   return apiSuccess();
 };
+
+
+exports.commentDelete = async function(params) {
+  if (!checkTokenValid(params.token)) {
+    return apiError('You are not logged in');
+  }
+  const userId = getUserId(params.token);
+
+  if (!userId) {
+    return apiError('Not logged in');
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    return apiError('Fail');
+  }
+
+  const comment = await Comment.findById(params.commentId);
+  if (!comment) {
+    return apiError('Comment does not exist');
+  }
+
+  if (userId != comment.commentAuthor) {
+    return apiError('Fail');
+  }
+  await Comment.findByIdAndRemove(comment.id);
+  return apiSuccess();
+};
