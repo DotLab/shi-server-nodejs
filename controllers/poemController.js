@@ -1,5 +1,6 @@
 const Poem = require('../models/Poem');
 const User = require('../models/User');
+const Comment = require('../models/Comment');
 const {apiError, apiSuccess} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
 
@@ -127,4 +128,31 @@ exports.listing = async function(token) {
     console.log(poems);
   }
   return apiSuccess(poems);
+};
+
+
+exports.comment = async function(params) {
+  if (!checkTokenValid(params.token)) {
+    return apiError('You are not logged in');
+  }
+  const userId = getUserId(params.token);
+
+  if (!userId) {
+    return apiError('Not logged in');
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    return apiError('Fail');
+  }
+  const poem = await Poem.findById(params.poemId);
+  if (!poem) return apiError('Invalid poem');
+
+  await Comment.create({
+    poemAuthor: poem.author,
+    commentAuthor: userId,
+    poem: params.poemId,
+    body: params.comment,
+    date: params.date,
+  });
+  return apiSuccess();
 };

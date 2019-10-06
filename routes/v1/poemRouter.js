@@ -55,3 +55,16 @@ router.post('/unlike', async (req, res) => {
   }));
 });
 module.exports = router;
+
+
+router.post('/comment', async (req, res) => {
+  const token = String(req.body.token);
+  const poemId = String(req.body.poemId);
+  const comment = String(req.body.comment);
+  const date = new Date();
+
+  res.json(await poemController.comment({
+    token, poemId, comment, date,
+  }));
+})
+;
