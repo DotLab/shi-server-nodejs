@@ -1,43 +1,41 @@
-const tokensToId = {};
-const IdToToken = {};
-
 const {genSecureRandomString} = require('../controllers/utils');
 
-
-function checkToken(token) {
-  return tokensToId[token];
-}
-
-
-function saveToken(token, id) {
-  IdToToken[id] = token;
-  tokensToId[token] = id;
-}
-
+const userIdByToken = {};
+const tokenByUserId = {};
 
 exports.createToken = function(userId) {
+  if (tokenByUserId[userId] !== undefined) {
+    delete userIdByToken[tokenByUserId[userId]];
+    delete tokenByUserId[userId];
+  }
+
   const token = genSecureRandomString();
-  saveToken(token, userId);
+  tokenByUserId[userId] = token;
+  userIdByToken[token] = userId;
+
   return token;
 };
 
 
 exports.checkTokenValid = function(token) {
-  const userId = checkToken(token);
+  const userId = userIdByToken[token];
   if (!userId) {
     return false;
-  } else return true;
+  }
+  return true;
 };
 
 
 exports.getUserId = function(token) {
-  console.log(tokensToId);
-  return tokensToId[token];
+  return userIdByToken[token];
 };
 
 
-exports.checkLoggedIn = function(userId) {
-  const token = IdToToken[userId];
-  if (!token) return false;
-  else return true;
+exports.checkUserHasToken = function(userId) {
+  const token = tokenByUserId[userId];
+  if (!token) {
+    return false;
+  }
+  return true;
 };
+

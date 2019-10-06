@@ -1,6 +1,6 @@
 const User = require('../models/User');
-const {apiError, apiSuccess, genPasswordSalt, calcPasswordHash} = require('./utils');
-const {createToken, checkLoggedIn} = require('../services/tokenService');
+const {apiError, apiSuccess, genSecureRandomString, calcPasswordHash} = require('./utils');
+const {createToken, checkUserHasToken} = require('../services/tokenService');
 
 exports.register = async function(params) {
   const existingUserCount = await User.countDocuments({
@@ -11,7 +11,7 @@ exports.register = async function(params) {
     return apiError('Existing name or email');
   }
 
-  const salt = genPasswordSalt();
+  const salt = genSecureRandomString();
   const hash = calcPasswordHash(params.password, salt);
 
   await User.create({
@@ -31,15 +31,15 @@ exports.login = async function(params) {
     return apiError('Invalid email');
   }
   // if user is logged in, reject login
-  if (checkLoggedIn(user.id)) {
-    return apiError('Already logged in');
+  if (checkUserHasToken(user.id)) {
+    const token = createToken(user.id);
+    return apiSuccess(token);
   }
 
   const hash = calcPasswordHash(params.password, user.passwordSalt);
   if (hash !== user.passwordSha256 ) {
     return apiError('Fail');
-  } else {
-    const token = createToken(user.id);
-    return apiSuccess(token);
   }
+  const token = createToken(user.id);
+  return apiSuccess(token);
 };

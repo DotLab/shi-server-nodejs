@@ -15,10 +15,6 @@ exports.apiError = function(payload) {
   return {status: API_ERROR, payload};
 };
 
-exports.genPasswordSalt = function() {
-  return crypto.randomBytes(PASSWORD_SALT_LENGTH).toString(PASSWORD_ENCODING);
-};
-
 exports.genSecureRandomString = function(length) {
   if (length === undefined) {
     return crypto.randomBytes(PASSWORD_SALT_LENGTH).toString(PASSWORD_ENCODING);
