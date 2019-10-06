@@ -13,15 +13,4 @@ router.post('/register', async (req, res) => {
   }));
 });
 
-
-router.post('/login', async (req, res) => {
-  const email = String(req.body.email);
-  const password = String(req.body.password);
-
-  res.json(await userController.login({
-    email, password,
-  }));
-});
-
-
 module.exports = router;

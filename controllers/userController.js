@@ -25,7 +25,6 @@ exports.register = async function(params) {
   return apiSuccess();
 };
 
-
 exports.login = async function(params) {
   const user = await User.findOne({email: params.email});
   if (!user) {
@@ -44,4 +43,3 @@ exports.login = async function(params) {
     return apiSuccess(token);
   }
 };
-
