@@ -164,6 +164,7 @@ exports.commentDelete = async function(params) {
   }
   const userId = getUserId(params.token);
 
+  // console.log(params.token);
   if (!userId) {
     return apiError('Not logged in');
   }
@@ -172,14 +173,25 @@ exports.commentDelete = async function(params) {
     return apiError('Fail');
   }
 
+
   const comment = await Comment.findById(params.commentId);
+  // console.log(comment);
+
   if (!comment) {
     return apiError('Comment does not exist');
   }
 
-  if (userId != comment.commentAuthor) {
+  const poem = await Poem.findById(comment.poem);
+
+  if (!poem) {
+    return apiError('Poem does not exist');
+  }
+
+
+  if ((userId == comment.commentAuthor) || (poem.author == userId)) {
+    await Comment.findByIdAndRemove(params.commentId);
+    return apiSuccess();
+  } else {
     return apiError('Fail');
   }
-  await Comment.findByIdAndRemove(comment.id);
-  return apiSuccess();
 };
