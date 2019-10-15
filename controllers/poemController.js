@@ -156,3 +156,33 @@ exports.comment = async function(params) {
   });
   return apiSuccess();
 };
+
+
+exports.commentDelete = async function(params) {
+  if (!checkTokenValid(params.token)) {
+    return apiError('You are not logged in');
+  }
+  const userId = getUserId(params.token);
+  const user = await User.findById(userId);
+  if (!user) {
+    return apiError('Fail');
+  }
+
+
+  const comment = await Comment.findById(params.commentId);
+  if (!comment) {
+    return apiError('Comment does not exist');
+  }
+
+  const poem = await Poem.findById(comment.poem);
+  if (!poem) {
+    return apiError('Poem does not exist');
+  }
+
+
+  if ((userId == comment.commentAuthor) || (userId == poem.author)) {
+    await Comment.findByIdAndRemove(params.commentId);
+    return apiSuccess();
+  }
+  return apiError('Fail');
+};

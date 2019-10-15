@@ -66,4 +66,14 @@ router.post('/comment', async (req, res) => {
   }));
 });
 
+
+router.post('/comment/delete', async (req, res) => {
+  const token = String(req.body.token);
+  const commentId = String(req.body.commentId);
+
+  res.json(await poemController.commentDelete({
+    token, commentId,
+  }));
+});
+
 module.exports = router;
