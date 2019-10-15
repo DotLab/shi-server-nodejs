@@ -83,3 +83,25 @@ exports.like = async function(params) {
   await Poem.findByIdAndUpdate(poem.id, {likeCount: newLikeCount});
   return apiSuccess();
 };
+
+
+exports.unlike = async function(params) {
+  if (!checkTokenValid(params.token)) {
+    return apiError('You are not logged in');
+  }
+  const userId = getUserId(params.token);
+  const user = await User.findById(userId);
+  const poem = await Poem.findById(params.poemId);
+  if (!poem) {
+    return apiError('Poem does not exist');
+  }
+
+  // remove relation from UserLikedPoem
+  const likeRelation = await UserLikedPoem.findOne({user: user, poem: poem});
+  await UserLikedPoem.findByIdAndRemove(likeRelation.id);
+
+  // decrement likeCount
+  const newLikeCount = poem.likeCount - 1;
+  await Poem.findByIdAndUpdate(poem.id, {likeCount: newLikeCount});
+  return apiSuccess();
+};
