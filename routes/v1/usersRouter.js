@@ -13,4 +13,24 @@ router.post('/register', async (req, res) => {
   }));
 });
 
+router.post('/login', async (req, res) => {
+  const email = String(req.body.email);
+  const password = String(req.body.password);
+
+  res.json(await userController.login({
+    email, password,
+  }));
+});
+
+
+router.post('/settings/password/change', async (req, res) => {
+  const currentPassword = String(req.body.currentPassword);
+  const newPassword = String(req.body.newPassword);
+  const token = String(req.body.token);
+
+  res.json(await userController.changePassword({
+    currentPassword, newPassword, token,
+  }));
+});
+
 module.exports = router;
