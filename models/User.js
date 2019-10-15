@@ -14,3 +14,14 @@ module.exports = mongoose.model('User', {
   followerCount: Number,
   follower: [{userId: ObjectId}],
 });
+
+// exports.serializeUser = function(user) {
+//   const {
+//     id,
+//     userName, displayName, followingCount, following, followerCount, follower,
+//   } = user;
+//   return {
+//     id,
+//     userName, displayName, followingCount, following, followerCount, follower,
+//   };
+// };
