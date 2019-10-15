@@ -88,7 +88,7 @@ exports.follow = async function(params) {
     return apiError('Fail');
   }
 
-  const following = await User.findById(params.followingId);
+  const following = await User.findById(params.followId);
   if (!following) {
     return apiError('Invalid following');
   }
@@ -98,7 +98,7 @@ exports.follow = async function(params) {
   await User.findByIdAndUpdate(userId, {followingCount: newFollowingCount});
 
   const newFollowerCount = following.followerCount + 1;
-  await User.findByIdAndUpdate(params.followingId, {followerCount: newFollowerCount});
+  await User.findByIdAndUpdate(params.followId, {followerCount: newFollowerCount});
 
   await UserFollowUser.create({
     follower: user,

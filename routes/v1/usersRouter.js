@@ -36,10 +36,10 @@ router.post('/settings/password/change', async (req, res) => {
 
 router.post('/follow', async (req, res) => {
   const token = String(req.body.token);
-  const followingId = String(req.body.followingId);
+  const followId = String(req.body.followId);
 
   res.json(await userController.follow({
-    token, followingId,
+    token, followId,
   }));
 });
 
