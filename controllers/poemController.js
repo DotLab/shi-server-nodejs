@@ -1,5 +1,6 @@
 const Poem = require('../models/Poem');
 const UserLikedPoem = require('../models/UserLikedPoem');
+const UserFollowUser = require('../models/UserFollowUser');
 const User = require('../models/User');
 const {apiError, apiSuccess} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
@@ -18,6 +19,7 @@ exports.create = async function(params) {
     lastEdit: params.date,
     privacy: params.privacy,
     likeCount: 0,
+    viewCount: 0,
   });
   return apiSuccess();
 };
@@ -104,4 +106,28 @@ exports.unlike = async function(params) {
   const newLikeCount = poem.likeCount - 1;
   await Poem.findByIdAndUpdate(poem.id, {likeCount: newLikeCount});
   return apiSuccess();
+};
+
+
+exports.listing = async function(token) {
+  if (token== 'undefined' || !checkTokenValid(token)) {
+    // not authorized user, list most viewed poems
+    const poems = [];
+    const collections = await Poem.find({}).sort({viewCount: -1});
+    collections.forEach((poem) => poems.push(poem));
+    return apiSuccess(poems);
+  }
+
+  // authorized user, list follower's poems
+  const userId = getUserId(token);
+  const user = await User.findById(userId);
+
+  const following = await UserFollowUser.find({follower: user});
+
+  const poems = [];
+  for (let i = 0; i < user.followingCount; i++) {
+    const collections = await Poem.find({author: following[i].following});
+    collections.forEach((poem) => poems.push(poem));
+  }
+  return apiSuccess(poems);
 };

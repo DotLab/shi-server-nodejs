@@ -9,4 +9,5 @@ module.exports = mongoose.model('Poem', {
   lastEdit: Date,
   privacy: String,
   likeCount: Number,
+  viewCount: Number,
 });
