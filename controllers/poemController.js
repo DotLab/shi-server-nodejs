@@ -1,4 +1,6 @@
 const Poem = require('../models/Poem');
+const UserLikedPoem = require('../models/UserLikedPoem');
+const User = require('../models/User');
 const {apiError, apiSuccess} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
 
@@ -15,6 +17,7 @@ exports.create = async function(params) {
     dateWritten: params.date,
     lastEdit: params.date,
     privacy: params.privacy,
+    likeCount: 0,
   });
   return apiSuccess();
 };
@@ -57,5 +60,26 @@ exports.delete = async function(params) {
     return apiError('Fail');
   }
   await Poem.findByIdAndRemove(poem.id);
+  return apiSuccess();
+};
+
+exports.like = async function(params) {
+  if (!checkTokenValid(params.token)) {
+    return apiError('You are not logged in');
+  }
+  const userId = getUserId(params.token);
+  const user = await User.findById(userId);
+  const poem = await Poem.findById(params.poemId);
+  if (!poem) {
+    return apiError('Poem does not exist');
+  }
+
+  const newLikeCount = poem.likeCount + 1;
+  await UserLikedPoem.create({
+    user: user,
+    poem: poem,
+  });
+
+  await Poem.findByIdAndUpdate(poem.id, {likeCount: newLikeCount});
   return apiSuccess();
 };
