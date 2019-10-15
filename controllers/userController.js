@@ -107,3 +107,33 @@ exports.follow = async function(params) {
 
   return apiSuccess();
 };
+
+
+exports.unfollow = async function(params) {
+  const userId = getUserId(params.token);
+
+  if (!userId) {
+    return apiError('Not logged in');
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    return apiError('Fail');
+  }
+
+  const unfollow = await User.findById(params.unfollowId);
+  if (!unfollow) {
+    return apiError('Invalid user to unfollow');
+  }
+
+  // user's following count --, unfollow's follower count --, remove userFollowUser relation
+  const newFollowingCount = user.followingCount - 1;
+  await User.findByIdAndUpdate(userId, {followingCount: newFollowingCount});
+
+  const newFollowerCount = unfollow.followerCount - 1;
+  await User.findByIdAndUpdate(params.unfollowId, {followerCount: newFollowerCount});
+
+  const followRelation = await UserFollowUser.findOne({follower: user, following: unfollow});
+  await UserFollowUser.findByIdAndRemove(followRelation.id);
+
+  return apiSuccess();
+};
