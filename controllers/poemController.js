@@ -1,4 +1,5 @@
 const Poem = require('../models/Poem');
+const Comment = require('../models/Comment');
 const UserLikedPoem = require('../models/UserLikedPoem');
 const UserFollowUser = require('../models/UserFollowUser');
 const User = require('../models/User');
@@ -130,4 +131,28 @@ exports.listing = async function(token) {
     collections.forEach((poem) => poems.push(poem));
   }
   return apiSuccess(poems);
+};
+
+
+exports.comment = async function(params) {
+  if (!checkTokenValid(params.token)) {
+    return apiError('You are not logged in');
+  }
+  const userId = getUserId(params.token);
+  const user = await User.findById(userId);
+  if (!user) {
+    return apiError('Fail');
+  }
+
+  const poem = await Poem.findById(params.poemId);
+  if (!poem) return apiError('Invalid poem');
+
+  await Comment.create({
+    poemAuthor: poem.author,
+    commentAuthor: userId,
+    poem: params.poemId,
+    body: params.comment,
+    date: params.date,
+  });
+  return apiSuccess();
 };
