@@ -14,5 +14,17 @@ router.post('/create', async (req, res) => {
   }));
 });
 
+router.post('/edit', async (req, res) => {
+  const token = String(req.body.token);
+  const poemId = String(req.body.poemId);
+  const title = String(req.body.title);
+  const body = String(req.body.body);
+  const date = new Date();
+  const privacy = String(req.body.privacy);
+
+  res.json(await poemController.edit({
+    token, poemId, title, body, date, privacy,
+  }));
+});
 
 module.exports = router;
