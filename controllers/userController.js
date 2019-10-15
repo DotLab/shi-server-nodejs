@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const UserFollowUser = require('../models/UserFollowUser');
+
 const {apiError, apiSuccess, genSecureRandomString, calcPasswordHash} = require('./utils');
 const {createToken, checkUserHasToken, getUserId} = require('../services/tokenService');
 
@@ -20,6 +22,8 @@ exports.register = async function(params) {
     email: params.email,
     passwordSalt: salt,
     passwordSha256: hash,
+    followingCount: 0,
+    followerCount: 0,
   });
 
   return apiSuccess();
@@ -70,4 +74,36 @@ exports.changePassword = async function(params) {
 
     return apiSuccess();
   }
+};
+
+
+exports.follow = async function(params) {
+  const userId = getUserId(params.token);
+
+  if (!userId) {
+    return apiError('Not logged in');
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    return apiError('Fail');
+  }
+
+  const following = await User.findById(params.followingId);
+  if (!following) {
+    return apiError('Invalid following');
+  }
+
+  // user's following count ++, following's follower count ++, create follow relation
+  const newFollowingCount = user.followingCount + 1;
+  await User.findByIdAndUpdate(userId, {followingCount: newFollowingCount});
+
+  const newFollowerCount = following.followerCount + 1;
+  await User.findByIdAndUpdate(params.followingId, {followerCount: newFollowerCount});
+
+  await UserFollowUser.create({
+    follower: user,
+    following: following,
+  });
+
+  return apiSuccess();
 };
