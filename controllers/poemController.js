@@ -25,6 +25,9 @@ exports.edit = async function(params) {
   }
   const userId = getUserId(params.token);
   const poem = await Poem.findById(params.poemId);
+  if (!poem) {
+    return apiError('Fail');
+  }
 
   if (userId != poem.author) {
     return apiError('Fail');
