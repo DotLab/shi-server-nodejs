@@ -51,7 +51,7 @@ exports.changePassword = async function(params) {
   if (!userId) {
     return apiError('Not logged in');
   }
-  let user = await User.findById(userId);
+  const user = await User.findById(userId);
   if (!user) {
     return apiError('Not registered');
   }
@@ -67,8 +67,6 @@ exports.changePassword = async function(params) {
         passwordSalt: newSalt,
         passwordSha256: newHash},
     });
-
-    user = await User.findById(user.id);
 
     return apiSuccess();
   }
