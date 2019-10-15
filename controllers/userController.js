@@ -55,10 +55,8 @@ exports.changePassword = async function(params) {
   if (!user) {
     return apiError('Not registered');
   }
-  console.log(user._id);
 
   const hash = calcPasswordHash(params.currentPassword, user.passwordSalt);
-
   if (hash !== user.passwordSha256) {
     return apiError('Forbidden');
   } else {
@@ -71,7 +69,6 @@ exports.changePassword = async function(params) {
     });
 
     user = await User.findById(user.id);
-    console.log(user);
 
     return apiSuccess();
   }
