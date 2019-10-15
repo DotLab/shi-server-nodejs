@@ -10,4 +10,7 @@ module.exports = mongoose.model('User', {
 
   followingCount: Number,
   followerCount: Number,
+
+  lastActive: Date,
+  viewCount: Number,
 });
