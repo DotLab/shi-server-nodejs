@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const {apiError, apiSuccess, genSecureRandomString, calcPasswordHash} = require('./utils');
-const {createToken, getUserId, checkTokenValid} = require('../services/tokenService');
-const {FORBIDDEN, UNAUTHORIZED} = require('./utils');
+const {createToken, getUserId} = require('../services/tokenService');
+const {FORBIDDEN} = require('./utils');
 
 exports.register = async function(params) {
   const existingUserCount = await User.countDocuments({
