@@ -7,6 +7,9 @@ const PASSWORD_HASHER = 'sha256';
 const API_SUCCESS = 'SUCCESS';
 const API_ERROR = 'ERROR';
 
+exports.BAD_REQUEST = 400;
+exports.FORBIDDEN = 403;
+
 exports.apiSuccess = function(payload) {
   return {status: API_SUCCESS, payload};
 };
@@ -15,8 +18,10 @@ exports.apiError = function(payload) {
   return {status: API_ERROR, payload};
 };
 
-exports.genPasswordSalt = function() {
-  return crypto.randomBytes(PASSWORD_SALT_LENGTH).toString(PASSWORD_ENCODING);
+exports.genSecureRandomString = function(length) {
+  if (length === undefined) {
+    return crypto.randomBytes(PASSWORD_SALT_LENGTH).toString(PASSWORD_ENCODING);
+  } else return crypto.randomBytes(length).toString(PASSWORD_ENCODING);
 };
 
 exports.calcPasswordHash = function(password, salt) {
