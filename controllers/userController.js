@@ -25,16 +25,10 @@ exports.register = async function(params) {
   return apiSuccess();
 };
 
-
 exports.login = async function(params) {
   const user = await User.findOne({email: params.email});
   if (!user) {
     return apiError('Invalid email');
-  }
-
-  if (checkUserHasToken(user.id)) {
-    const token = createToken(user.id);
-    return apiSuccess(token);
   }
 
   const hash = calcPasswordHash(params.password, user.passwordSalt);
