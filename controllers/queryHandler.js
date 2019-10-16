@@ -4,9 +4,13 @@ const UserFollowUser = require('../models/UserFollowUser');
 
 async function findFollowing(userId, query) {
   const following = await UserFollowUser.find({follower: userId}).select('following');
+
   const arr = [];
-  following.forEach((x) => arr.push(x));
-  return query.find({_id: {$in: arr}});
+  following.forEach((x) => arr.push(x.following));
+
+  query = query.find({_id: {$in: arr}});
+
+  return query;
 }
 
 
@@ -29,7 +33,7 @@ exports.handleSort = function(sort, order, query) {
 };
 
 
-exports.handleFilter = function(filter, token, query) {
+exports.handleFilter = async function(filter, token, query) {
   if (filter === 'all') {
     query = query.find({});
   } else if (filter === 'follow') {
@@ -39,7 +43,12 @@ exports.handleFilter = function(filter, token, query) {
     const userId = getUserId(token);
     // TODO
     // query = query.aggregate([{$lookup: {from: 'userfollowusers', localField: 'id', foreignField: 'follower'}}]);
-    query = findFollowing(userId, query);
+
+    const following = await UserFollowUser.find({follower: userId}).select('following');
+    const arr = [];
+    following.forEach((x) => arr.push(x.following));
+    query = query.find({_id: {$in: arr}});
+    console.log(await query.exec());
   } else {
     return 'invalid';
   }
@@ -47,7 +56,7 @@ exports.handleFilter = function(filter, token, query) {
 
 exports.handleSearch = function(search, query) {
   if (search != undefined) {
-    query = User.find({displayName: search});
+    query = query.find({displayName: search});
   }
 };
 
