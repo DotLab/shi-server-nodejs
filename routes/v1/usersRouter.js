@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../../controllers/userController');
-const {createTypeChecker, STRING} = require('./utils.js');
+const {createTypeChecker, checkToken, STRING} = require('./utils.js');
 
 router.post('/register', createTypeChecker({
   'userName': STRING,
@@ -31,5 +31,19 @@ router.post('/login', createTypeChecker({
   }));
 });
 
+router.post('/settings/password/change', createTypeChecker({
+  'token': STRING,
+  'currentPassword': STRING,
+  'newPassword': STRING,
+}), checkToken()
+, async (req, res) => {
+  const currentPassword = req.body.currentPassword;
+  const newPassword = req.body.newPassword;
+  const token = req.body.token;
+
+  res.json(await userController.changePassword({
+    currentPassword, newPassword, token,
+  }));
+});
 
 module.exports = router;

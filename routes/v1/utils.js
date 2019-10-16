@@ -1,4 +1,5 @@
-const {apiError, BAD_REQUEST} = require('../../controllers/utils');
+const {apiError, BAD_REQUEST, UNAUTHORIZED} = require('../../controllers/utils');
+const {checkTokenValid} = require('../../services/tokenService');
 
 exports.STRING = 'string';
 exports.NUMBER = 'number';
@@ -23,6 +24,15 @@ exports.createTypeChecker = function(params) {
           return res.json(apiError(BAD_REQUEST));
         }
       }
+    }
+    next();
+  };
+};
+
+exports.checkToken = function() {
+  return function(req, res, next) {
+    if (!checkTokenValid(req.body.token)) {
+      return res.json(apiError(UNAUTHORIZED));
     }
     next();
   };
