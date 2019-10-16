@@ -21,7 +21,6 @@
     "eslint": "^6.5.1",
     "eslint-config-google": "^0.14.0",
     "express": "^4.17.1",
-    "express-http-response": "0.0.8",
     "mongoose": "^5.7.3"
   }
 }
