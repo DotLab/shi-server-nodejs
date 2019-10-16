@@ -1,18 +1,27 @@
-const {apiError} = require('../../controllers/utils');
+const {apiError, BAD_REQUEST} = require('../../controllers/utils');
 
 exports.STRING = 'string';
 exports.NUMBER = 'number';
 exports.DATE = 'date';
 
-
 exports.createTypeChecker = function(params) {
   return function(req, res, next) {
-    for (const key in params) {
-      if (key[0] === '-' && req.body[key] === undefined) {
-        continue;
-      }
-      if (!checkType(params[key], req.body[key])) {
-        return res.json(apiError('Fail'));
+    for (let key in params) {
+      // Key is optional or required
+      if (key[0] === '-') {
+        // Optional key exists or not exist
+        if (req.body[key] === undefined) {
+          continue;
+        } else {
+          key = key.slice(1);
+          if (!checkType(params[key], req.body[key])) {
+            return res.json(apiError(BAD_REQUEST));
+          }
+        }
+      } else {
+        if (!checkType(params[key], req.body[key])) {
+          return res.json(apiError(BAD_REQUEST));
+        }
       }
     }
     next();
@@ -21,8 +30,5 @@ exports.createTypeChecker = function(params) {
 
 
 function checkType(type, variable) {
-  if ((typeof variable) === type) {
-    return true;
-  }
-  return false;
+  return ((typeof variable) === type);
 }

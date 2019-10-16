@@ -8,7 +8,6 @@ router.post('/register', createTypeChecker({
   'email': STRING,
   'displayName': STRING,
   'password': STRING,
-
 }), async (req, res) => {
   const userName = req.body.userName;
   const email = req.body.email;
