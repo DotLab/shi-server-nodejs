@@ -9,11 +9,12 @@ exports.createTypeChecker = function(params) {
     for (const key in params) {
       // Key is optional or required
       if (key[0] === '-') {
-        // Optional key does not exists or exists
-        if (req.body[key.slice(1)] === undefined) {
+        // Optional key may not exist
+        const keySlice = key.slice(1);
+        if (req.body[keySlice] === undefined) {
           continue;
         } else {
-          if (!checkType(params[key], req.body[key.slice(1)])) {
+          if (!checkType(params[key], req.body[keySlice])) {
             return res.json(apiError(BAD_REQUEST));
           }
         }
