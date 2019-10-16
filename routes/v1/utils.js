@@ -6,15 +6,14 @@ exports.DATE = 'date';
 
 exports.createTypeChecker = function(params) {
   return function(req, res, next) {
-    for (let key in params) {
+    for (const key in params) {
       // Key is optional or required
       if (key[0] === '-') {
-        // Optional key exists or not exist
-        if (req.body[key] === undefined) {
+        // Optional key does not exists or exists
+        if (req.body[key.slice(1)] === undefined) {
           continue;
         } else {
-          key = key.slice(1);
-          if (!checkType(params[key], req.body[key])) {
+          if (!checkType(params[key], req.body[key.slice(1)])) {
             return res.json(apiError(BAD_REQUEST));
           }
         }
