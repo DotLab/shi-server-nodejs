@@ -4,10 +4,10 @@ const userController = require('../../controllers/userController');
 const {createTypeChecker, STRING} = require('./utils.js');
 
 router.post('/register', createTypeChecker({
-  userName: STRING,
-  email: STRING,
-  displayName: STRING,
-  password: STRING,
+  'userName': STRING,
+  'email': STRING,
+  'displayName': STRING,
+  'password': STRING,
 
 }), async (req, res) => {
   const userName = req.body.userName;
@@ -22,8 +22,8 @@ router.post('/register', createTypeChecker({
 
 
 router.post('/login', createTypeChecker({
-  email: STRING,
-  password: STRING,
+  'email': STRING,
+  'password': STRING,
 }), async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;

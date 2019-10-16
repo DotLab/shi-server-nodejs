@@ -8,6 +8,9 @@ exports.DATE = 'date';
 exports.createTypeChecker = function(params) {
   return function(req, res, next) {
     for (const key in params) {
+      if (key[0] === '-' && req.body[key] === undefined) {
+        continue;
+      }
       if (!checkType(params[key], req.body[key])) {
         return res.json(apiError('Fail'));
       }
