@@ -28,7 +28,6 @@ exports.createTypeChecker = function(params) {
   };
 };
 
-
 function checkType(type, variable) {
   return ((typeof variable) === type);
 }

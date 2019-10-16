@@ -16,7 +16,6 @@ exports.createToken = function(userId) {
   return token;
 };
 
-
 exports.checkTokenValid = function(token) {
   const userId = userIdByToken[token];
   // User does not have token.
@@ -26,11 +25,9 @@ exports.checkTokenValid = function(token) {
   return true;
 };
 
-
 exports.getUserId = function(token) {
   return userIdByToken[token];
 };
-
 
 exports.checkUserHasToken = function(userId) {
   const token = tokenByUserId[userId];

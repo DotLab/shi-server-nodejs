@@ -19,7 +19,6 @@ router.post('/register', createTypeChecker({
   }));
 });
 
-
 router.post('/login', createTypeChecker({
   'email': STRING,
   'password': STRING,
