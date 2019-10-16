@@ -48,7 +48,6 @@ exports.handleFilter = async function(filter, token, query) {
     const arr = [];
     following.forEach((x) => arr.push(x.following));
     query = query.find({_id: {$in: arr}});
-    console.log(await query.exec());
   } else {
     return 'invalid';
   }
