@@ -1,5 +1,5 @@
 const express = require('express');
-const poetsController = require('../../controllers/poetController');
+const poetController = require('../../controllers/poetController');
 const {checkType, apiError} = require('../../controllers/utils');
 const {STRING, NUMBER} = require('../../controllers/utils');
 const router = express.Router();
@@ -43,7 +43,7 @@ router.post('/', async (req, res) =>{
     return res.json(apiError('Fail'));
   }
 
-  res.json(await poetsController.listingQuery({
+  res.json(await poetController.listingQuery({
     token, filter, sort, limit, skip, order,
     activeYearLimit, search,
   }));

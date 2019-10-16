@@ -1,21 +1,29 @@
 const User = require('../models/User');
 const {apiError, apiSuccess} = require('./utils');
-const {handleFilter, handleSort, handleSearch, handleActiveYearLimit} = require('./utils');
+const {handleFilter, handleSort, handleSearch, handleActiveYearLimit} = require('./queryHandler');
 
 exports.listingQuery = async function(params) {
-  let query = User.find({}).select('displayName followingCount followerCount lastActive viewCount');
+  let query = User.find({}).select('id displayName followingCount followerCount lastActive viewCount');
 
   // search
-  handleSearch(params.search, query);
+  if (handleSearch(params.search, query) == 'invalid') {
+    return apiError('Invalid');
+  }
 
   // activeYearLimit
-  handleActiveYearLimit(params.activeYearLimit, query);
+  if (handleActiveYearLimit(params.activeYearLimit, query) == 'invalid') {
+    return apiError('Invalid');
+  }
 
   // filter
-  handleFilter(params.filter, params.token, query);
+  if (handleFilter(params.filter, params.token, query) == 'invalid') {
+    return apiError('Invalid');
+  }
 
   // sort and order
-  handleSort(params.sort, params.order, query);
+  if (handleSort(params.sort, params.order, query) == 'invalid') {
+    return apiError('Invalid');
+  }
 
   // skip
   query = query.skip(params.skip);
