@@ -7,7 +7,8 @@ const PASSWORD_HASHER = 'sha256';
 const API_SUCCESS = 'SUCCESS';
 const API_ERROR = 'ERROR';
 
-exports.BAD_REQUEST = '400 Bad Request';
+exports.BAD_REQUEST = 400;
+exports.FORBIDDEN = 403;
 
 exports.apiSuccess = function(payload) {
   return {status: API_SUCCESS, payload};

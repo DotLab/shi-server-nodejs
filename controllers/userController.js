@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const {apiError, apiSuccess, genSecureRandomString, calcPasswordHash} = require('./utils');
 const {createToken, checkUserHasToken} = require('../services/tokenService');
+const {FORBIDDEN} = require('./utils');
 
 exports.register = async function(params) {
   const existingUserCount = await User.countDocuments({
@@ -8,7 +9,7 @@ exports.register = async function(params) {
   });
 
   if (existingUserCount > 0) {
-    return apiError('Existing name or email');
+    return apiError(FORBIDDEN);
   }
 
   const salt = genSecureRandomString();
@@ -28,12 +29,12 @@ exports.register = async function(params) {
 exports.login = async function(params) {
   const user = await User.findOne({email: params.email});
   if (!user) {
-    return apiError('Invalid email');
+    return apiError(FORBIDDEN);
   }
 
   const hash = calcPasswordHash(params.password, user.passwordSalt);
   if (hash !== user.passwordSha256 ) {
-    return apiError('Fail');
+    return apiError(FORBIDDEN);
   }
   const token = createToken(user.id);
   return apiSuccess(token);
