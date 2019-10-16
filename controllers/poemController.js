@@ -22,6 +22,13 @@ exports.create = async function(params) {
     likeCount: 0,
     viewCount: 0,
   });
+
+  await User.findByIdAndUpdate(userId, {
+    $set: {
+      lastActive: new Date(),
+    },
+  });
+
   return apiSuccess();
 };
 
@@ -46,6 +53,13 @@ exports.edit = async function(params) {
       privacy: params.privacy,
     },
   });
+
+  await User.findByIdAndUpdate(userId, {
+    $set: {
+      lastActive: new Date(),
+    },
+  });
+
   return apiSuccess();
 };
 
