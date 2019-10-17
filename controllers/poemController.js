@@ -2,6 +2,7 @@ const Poem = require('../models/Poem');
 const UserLikePoem = require('../models/UserLikePoem');
 const UserVisitPoem = require('../models/UserVisitPoem');
 const User = require('../models/User');
+const Comment = require('../models/Comment');
 const {apiError, apiSuccess, FORBIDDEN, NOT_FOUND} = require('./utils');
 const {getUserId, checkTokenValid} = require('../services/tokenService');
 
@@ -153,4 +154,40 @@ exports.visit = async function(params) {
     }
     return apiSuccess(poem);
   }
+};
+
+exports.comment = async function(params) {
+  const userId = getUserId(params.token);
+
+  const poem = await Poem.findById(params.poemId);
+  if (!poem) return apiError(NOT_FOUND);
+
+  await Comment.create({
+    poemAuthor: poem.author,
+    commentAuthor: userId,
+    poem: params.poemId,
+    body: params.comment,
+    date: params.date,
+  });
+  return apiSuccess();
+};
+
+exports.commentDelete = async function(params) {
+  const userId = getUserId(params.token);
+
+  const comment = await Comment.findById(params.commentId);
+  if (!comment) {
+    return apiError(NOT_FOUND);
+  }
+
+  const poem = await Poem.findById(comment.poem);
+  if (!poem) {
+    return apiError(NOT_FOUND);
+  }
+
+  if ((userId == comment.commentAuthor) || (userId == poem.author)) {
+    await Comment.findByIdAndRemove(params.commentId);
+    return apiSuccess();
+  }
+  return apiError(FORBIDDEN);
 };
