@@ -7,4 +7,10 @@ module.exports = mongoose.model('User', {
 
   passwordSalt: String,
   passwordSha256: String,
+
+  followingCount: Number,
+  followerCount: Number,
+
+  lastActive: Date,
+  viewCount: Number,
 });

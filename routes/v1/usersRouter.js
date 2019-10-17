@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../../controllers/userController');
-const {createTypeChecker, checkToken, STRING} = require('./utils.js');
+const {createTypeChecker, checkToken, STRING, OBJECT_ID} = require('./utils.js');
 
 router.post('/register', createTypeChecker({
   'userName': STRING,
@@ -43,6 +43,32 @@ router.post('/settings/password/change', createTypeChecker({
 
   res.json(await userController.changePassword({
     currentPassword, newPassword, token,
+  }));
+});
+
+router.post('/follow', createTypeChecker({
+  'token': STRING,
+  'followId': OBJECT_ID,
+}), checkToken()
+, async (req, res) => {
+  const token = req.body.token;
+  const followId = req.body.followId;
+
+  res.json(await userController.follow({
+    token, followId,
+  }));
+});
+
+router.post('/unfollow', createTypeChecker({
+  'token': STRING,
+  'unfollowId': OBJECT_ID,
+}), checkToken()
+, async (req, res) => {
+  const token = req.body.token;
+  const unfollowId = req.body.unfollowId;
+
+  res.json(await userController.unfollow({
+    token, unfollowId,
   }));
 });
 
