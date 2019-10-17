@@ -98,7 +98,7 @@ exports.unfollow = async function(params) {
     return apiError(NOT_FOUND);
   }
 
-  // if not following unfollowId
+  // If not following unfollowId
   const followRelation = await UserFollowUser.findOne({follower: user, following: unfollow});
   if (!followRelation) {
     return apiError(FORBIDDEN);
