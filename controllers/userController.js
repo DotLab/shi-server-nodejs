@@ -22,7 +22,12 @@ exports.register = async function(params) {
     email: params.email,
     passwordSalt: salt,
     passwordSha256: hash,
+    followingCount: 0,
+    followerCount: 0,
+    lastActive: new Date(),
+    viewCount: 0,
   });
+
 
   return apiSuccess();
 };

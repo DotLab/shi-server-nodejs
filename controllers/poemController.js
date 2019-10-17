@@ -121,6 +121,7 @@ exports.visit = async function(params) {
       return apiError(FORBIDDEN);
     }
     const userId = getUserId(params.token);
+    const user = await User.findById(userId);
     const poem = await Poem.findById(params.poemId);
     if (!poem) {
       return apiError(NOT_FOUND);
@@ -129,7 +130,7 @@ exports.visit = async function(params) {
     // If already visited poemId
     const existing = await UserVisitPoem.find({user: userId, poem: params.poemId});
     if (existing.length) {
-      return apiError(FORBIDDEN);
+      return apiSuccess(poem);
     }
 
     await UserVisitPoem.create({
@@ -139,6 +140,9 @@ exports.visit = async function(params) {
 
     const newViewCount = poem.viewCount + 1;
     await Poem.findByIdAndUpdate(poem.id, {viewCount: newViewCount});
+
+    const newUserViewCount = user.viewCount + 1;
+    await User.findByIdAndUpdate(userId, {viewCount: newUserViewCount});
 
     return apiSuccess(poem);
   } else {
