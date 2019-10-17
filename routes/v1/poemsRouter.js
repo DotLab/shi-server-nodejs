@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const poemController = require('../../controllers/poemController');
-const {createTypeChecker, checkToken, checkPrivacy, STRING, OBJECT_ID} = require('./utils.js');
+const {createTypeChecker, checkToken, STRING, OBJECT_ID} = require('./utils.js');
 
 router.post('/create', createTypeChecker({
   'token': STRING,
@@ -76,6 +76,19 @@ router.post('/unlike', createTypeChecker({
   const poemId = req.body.poemId;
 
   res.json(await poemController.unlike({
+    token, poemId,
+  }));
+});
+
+router.post('/visit', createTypeChecker({
+  '-token': STRING,
+  'poemId': OBJECT_ID,
+})
+, async (req, res) => {
+  const token = req.body.token;
+  const poemId = req.body.poemId;
+
+  res.json(await poemController.visit({
     token, poemId,
   }));
 });
