@@ -28,7 +28,6 @@ exports.register = async function(params) {
     viewCount: 0,
   });
 
-
   return apiSuccess();
 };
 
