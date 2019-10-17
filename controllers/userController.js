@@ -24,7 +24,7 @@ exports.register = async function(params) {
     passwordSha256: hash,
     followingCount: 0,
     followerCount: 0,
-    lastActive: new Date(),
+    lastActiveDate: new Date(),
     viewCount: 0,
   });
 
@@ -66,55 +66,54 @@ exports.changePassword = async function(params) {
 
 exports.follow = async function(params) {
   const userId = getUserId(params.token);
-  const user = await User.findById(userId);
 
-  const following = await User.findById(params.followId);
-  if (!following) {
+  const followingCount = await User.find({_id: params.followId}).count();
+  if (followingCount === 0) {
     return apiError(NOT_FOUND);
   }
 
   // If already following followId
-  const existing = await UserFollowUser.find({follower: userId, following: params.followId});
-  if (existing.length) {
+  const existingCount = await UserFollowUser.find({follower: userId, following: params.followId}).count();
+  if (existingCount > 0) {
     return apiError(FORBIDDEN);
   }
   await UserFollowUser.create({
-    follower: user,
-    following: following,
+    follower: userId,
+    following: params.followId,
   });
 
-  // user's following count ++, following's follower count ++, create follow relation
-  const newFollowingCount = user.followingCount + 1;
-  await User.findByIdAndUpdate(userId, {followingCount: newFollowingCount});
+  // Increment user's following count.
+  // Increment following's follower count, and create follow relation
+  await User.findByIdAndUpdate(userId,
+      {$inc: {followingCount: 1}});
 
-  const newFollowerCount = following.followerCount + 1;
-  await User.findByIdAndUpdate(params.followId, {followerCount: newFollowerCount});
+  await User.findByIdAndUpdate(params.followId,
+      {$inc: {followerCount: 1}});
 
   return apiSuccess();
 };
 
 exports.unfollow = async function(params) {
   const userId = getUserId(params.token);
-  const user = await User.findById(userId);
 
-  const unfollow = await User.findById(params.unfollowId);
-  if (!unfollow) {
+  const unfollowCount = await User.find({_id: params.unfollowId}).count();
+  if (unfollowCount === 0) {
     return apiError(NOT_FOUND);
   }
 
   // if not following unfollowId
-  const followRelation = await UserFollowUser.findOne({follower: user, following: unfollow});
-  if (!followRelation) {
+  const followRelationCount = await UserFollowUser.find({follower: userId, following: params.unfollowId}).count();
+  if (followRelationCount === 0) {
     return apiError(FORBIDDEN);
   }
-  await UserFollowUser.findByIdAndRemove(followRelation.id);
+  await UserFollowUser.deleteMany({follower: userId, following: params.unfollowId});
 
   // user's following count --, unfollow's follower count --, remove userFollowUser relation
-  const newFollowingCount = user.followingCount - 1;
-  await User.findByIdAndUpdate(userId, {followingCount: newFollowingCount});
+  await User.findByIdAndUpdate(userId,
+      {$inc: {followingCount: -1}});
 
-  const newFollowerCount = unfollow.followerCount - 1;
-  await User.findByIdAndUpdate(params.unfollowId, {followerCount: newFollowerCount});
+  await User.findByIdAndUpdate(params.unfollowId,
+      {$inc: {followerCount: -1}});
 
   return apiSuccess();
 };

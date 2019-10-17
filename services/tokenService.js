@@ -16,7 +16,7 @@ exports.createToken = function(userId) {
   return token;
 };
 
-exports.checkTokenValid = function(token) {
+exports.createTokenCheckerValid = function(token) {
   const userId = userIdByToken[token];
   // User does not have token.
   if (!userId) {
