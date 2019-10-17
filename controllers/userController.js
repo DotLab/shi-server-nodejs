@@ -86,7 +86,6 @@ exports.follow = async function(params) {
   const newFollowerCount = following.followerCount + 1;
   await User.findByIdAndUpdate(params.followId, {followerCount: newFollowerCount});
 
-
   return apiSuccess();
 };
 
