@@ -3,7 +3,6 @@ const poetController = require('../../controllers/poetController');
 const {createTypeChecker, STRING, NUMBER} = require('./utils.js');
 const router = express.Router();
 
-
 router.post('/', createTypeChecker({
   '-token': STRING,
   'filter': STRING,
@@ -23,12 +22,10 @@ router.post('/', createTypeChecker({
   const activeYearLimit = req.body.activeYearLimit;
   const search = req.body.search;
 
-
   res.json(await poetController.listingQuery({
     token, filter, sort, order, limit, skip,
     activeYearLimit, search,
   }));
 });
-
 
 module.exports = router;

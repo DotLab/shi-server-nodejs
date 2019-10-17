@@ -24,9 +24,6 @@ exports.listingQuery = async function(params) {
       return apiError(FORBIDDEN);
     }
     const userId = getUserId(params.token);
-    // TODO
-    // query = query.aggregate([{$lookup: {from: 'userfollowusers', localField: 'id', foreignField: 'follower'}}]);
-
     const following = await UserFollowUser.find({follower: userId}).select('following');
     const arr = [];
     following.forEach((x) => arr.push(x.following));
