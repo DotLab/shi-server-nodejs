@@ -138,6 +138,7 @@ exports.visit = async function(params) {
       poem: poem.id,
     });
 
+    // Update viewCount for Poem and User
     const newViewCount = poem.viewCount + 1;
     await Poem.findByIdAndUpdate(poem.id, {viewCount: newViewCount});
 
