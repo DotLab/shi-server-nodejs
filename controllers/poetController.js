@@ -19,9 +19,7 @@ exports.listingQuery = async function(params) {
   }
 
   // filter
-  if (params.filter === 'all') {
-    query = query.find({});
-  } else if (params.filter === 'follow') {
+  if (params.filter === 'follow') {
     if (!checkTokenValid(params.token)) {
       return apiError(FORBIDDEN);
     }
@@ -33,7 +31,7 @@ exports.listingQuery = async function(params) {
     const arr = [];
     following.forEach((x) => arr.push(x.following));
     query = query.find({_id: {$in: arr}});
-  } else {
+  } else if (params.filter !== 'all') {
     return apiError(FORBIDDEN);
   }
 
