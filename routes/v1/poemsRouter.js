@@ -8,8 +8,7 @@ router.post('/create', createTypeChecker({
   'title': STRING,
   'body': STRING,
   'privacy': STRING,
-}), checkToken()
-, async (req, res) => {
+}), checkToken(), async (req, res) => {
   const token = req.body.token;
   const title = req.body.title;
   const body = req.body.body;
@@ -27,8 +26,7 @@ router.post('/edit', createTypeChecker({
   'title': STRING,
   'body': STRING,
   'privacy': STRING,
-}), checkToken()
-, async (req, res) => {
+}), checkToken(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
   const title = req.body.title;
@@ -44,8 +42,7 @@ router.post('/edit', createTypeChecker({
 router.post('/delete', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
-}), checkToken()
-, async (req, res) => {
+}), checkToken(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
@@ -57,8 +54,7 @@ router.post('/delete', createTypeChecker({
 router.post('/like', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
-}), checkToken()
-, async (req, res) => {
+}), checkToken(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
@@ -70,8 +66,7 @@ router.post('/like', createTypeChecker({
 router.post('/unlike', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
-}), checkToken()
-, async (req, res) => {
+}), checkToken(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
@@ -83,8 +78,7 @@ router.post('/unlike', createTypeChecker({
 router.post('/visit', createTypeChecker({
   '-token': STRING,
   'poemId': OBJECT_ID,
-})
-, async (req, res) => {
+}), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
