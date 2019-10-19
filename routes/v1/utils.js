@@ -1,12 +1,12 @@
 const {apiError, BAD_REQUEST, UNAUTHORIZED} = require('../../controllers/utils');
-const {createTokenCheckerValid} = require('../../services/tokenService');
+const {checkTokenValid} = require('../../services/tokenService');
 const mongoose = require('mongoose');
 
 exports.STRING = 'string';
 exports.NUMBER = 'number';
 exports.DATE = 'date';
-exports.OBJECT_ID = 'objectId';
 const OBJECT_ID = 'objectId';
+exports.OBJECT_ID = 'objectId';
 
 exports.createTypeChecker = function(params) {
   return function(req, res, next) {
@@ -34,7 +34,7 @@ exports.createTypeChecker = function(params) {
 
 exports.createTokenChecker = function() {
   return function(req, res, next) {
-    if (!createTokenCheckerValid(req.body.token)) {
+    if (!checkTokenValid(req.body.token)) {
       return res.json(apiError(UNAUTHORIZED));
     }
     next();

@@ -2,7 +2,7 @@ const User = require('../models/User');
 const UserFollowUser = require('../models/UserFollowUser');
 const {apiError, apiSuccess, genSecureRandomString, calcPasswordHash} = require('./utils');
 const {createToken, getUserId} = require('../services/tokenService');
-const {FORBIDDEN, NOT_FOUND} = require('./utils');
+const {FORBIDDEN, NOT_FOUND, BAD_REQUEST} = require('./utils');
 
 exports.register = async function(params) {
   const existingUserCount = await User.countDocuments({
@@ -75,7 +75,7 @@ exports.follow = async function(params) {
   // If already following followId
   const existingCount = await UserFollowUser.find({follower: userId, following: params.followId}).count();
   if (existingCount > 0) {
-    return apiError(FORBIDDEN);
+    return apiError(BAD_REQUEST);
   }
   await UserFollowUser.create({
     follower: userId,
@@ -83,10 +83,10 @@ exports.follow = async function(params) {
   });
 
   // Increment user's following count.
-  // Increment following's follower count, and create follow relation
   await User.findByIdAndUpdate(userId,
       {$inc: {followingCount: 1}});
 
+  // Increment following's follower count
   await User.findByIdAndUpdate(params.followId,
       {$inc: {followerCount: 1}});
 
@@ -108,10 +108,11 @@ exports.unfollow = async function(params) {
   }
   await UserFollowUser.deleteMany({follower: userId, following: params.unfollowId});
 
-  // user's following count --, unfollow's follower count --, remove userFollowUser relation
+  // Decrement user's following count.
   await User.findByIdAndUpdate(userId,
       {$inc: {followingCount: -1}});
 
+  // Decrement following's follower count
   await User.findByIdAndUpdate(params.unfollowId,
       {$inc: {followerCount: -1}});
 
