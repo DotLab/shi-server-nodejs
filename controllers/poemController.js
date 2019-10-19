@@ -2,7 +2,7 @@ const Poem = require('../models/Poem');
 const UserLikePoem = require('../models/UserLikePoem');
 const UserVisitPoem = require('../models/UserVisitPoem');
 const User = require('../models/User');
-const {apiError, apiSuccess, FORBIDDEN, NOT_FOUND, BAD_REQUEST} = require('./utils');
+const {apiError, apiSuccess, FORBIDDEN, NOT_FOUND, BAD_REQUEST, UNAUTHORIZED} = require('./utils');
 const {getUserId, checkTokenValid} = require('../services/tokenService');
 
 exports.create = async function(params) {
@@ -115,41 +115,50 @@ exports.unlike = async function(params) {
 };
 
 exports.visit = async function(params) {
-  // authorized/unauthorized User
-  if (params.token !== undefined) {
+  const userId = getUserId(params.token);
+  const poemCount = await Poem.find({_id: params.poemId});
+  if (poemCount === 0) {
+    return apiError(NOT_FOUND);
+  }
+
+  // If already visited poemId
+  const existingCount = await UserVisitPoem.find({user: userId, poem: params.poemId}).count();
+  if (existingCount > 0) {
+    return apiSuccess();
+  }
+
+  await UserVisitPoem.create({
+    user: userId,
+    poem: params.poemId,
+  });
+
+  const poem = await Poem.findById(params.poemId);
+
+  // Update viewCount for Poem and User
+  await Poem.findByIdAndUpdate(params.poemId,
+      {$inc: {viewCount: 1}});
+
+  await User.findByIdAndUpdate(poem.author,
+      {$inc: {viewCount: 1}});
+
+  return apiSuccess();
+};
+
+exports.detail = async function(params) {
+  const poem = await Poem.findById(params.poemId);
+  if (!poem) {
+    return apiError(NOT_FOUND);
+  }
+
+  // Poem is open to public, community or private
+  if (poem.privacy === 'public') {
+    return apiSuccess(poem);
+  } else if (poem.privacy === 'community') {
     if (!checkTokenValid(params.token)) {
-      return apiError(FORBIDDEN);
+      return apiError(UNAUTHORIZED);
     }
-    const userId = getUserId(params.token);
-    const poem = await Poem.findById(params.poemId);
-    if (!poem) {
-      return apiError(NOT_FOUND);
-    }
-
-    // If already visited poemId
-    const existingCount = await UserVisitPoem.find({user: userId, poem: params.poemId}).count();
-    if (existingCount > 0) {
-      return apiSuccess(poem);
-    }
-
-    await UserVisitPoem.create({
-      user: userId,
-      poem: params.poemId,
-    });
-
-    // Update viewCount for Poem and User
-    await Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {viewCount: 1}});
-
-    await User.findByIdAndUpdate(userId,
-        {$inc: {viewCount: 1}});
-
     return apiSuccess(poem);
   } else {
-    const poem = await Poem.findById(params.poemId);
-    if (!poem) {
-      return apiError(NOT_FOUND);
-    }
-    return apiSuccess(poem);
+    return apiError(FORBIDDEN);
   }
 };

@@ -76,13 +76,25 @@ router.post('/unlike', createTypeChecker({
 });
 
 router.post('/visit', createTypeChecker({
+  'token': STRING,
+  'poemId': OBJECT_ID,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+  const poemId = req.body.poemId;
+
+  res.json(await poemController.visit({
+    token, poemId,
+  }));
+});
+
+router.post('/detail', createTypeChecker({
   '-token': STRING,
   'poemId': OBJECT_ID,
 }), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
-  res.json(await poemController.visit({
+  res.json(await poemController.detail({
     token, poemId,
   }));
 });
