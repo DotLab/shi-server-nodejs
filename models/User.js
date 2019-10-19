@@ -11,6 +11,6 @@ module.exports = mongoose.model('User', {
   followingCount: Number,
   followerCount: Number,
 
-  lastActive: Date,
+  lastActiveDate: Date,
   viewCount: Number,
 });

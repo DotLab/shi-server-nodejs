@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 exports.STRING = 'string';
 exports.NUMBER = 'number';
 exports.DATE = 'date';
+const OBJECT_ID = 'objectId';
 exports.OBJECT_ID = 'objectId';
 
 exports.createTypeChecker = function(params) {
@@ -31,7 +32,7 @@ exports.createTypeChecker = function(params) {
   };
 };
 
-exports.checkToken = function() {
+exports.createTokenChecker = function() {
   return function(req, res, next) {
     if (!checkTokenValid(req.body.token)) {
       return res.json(apiError(UNAUTHORIZED));
@@ -41,7 +42,7 @@ exports.checkToken = function() {
 };
 
 function checkType(type, variable) {
-  if (type === 'objectId') {
+  if (type === OBJECT_ID) {
     return mongoose.Types.ObjectId.isValid(variable);
   }
   return ((typeof variable) === type);
