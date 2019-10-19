@@ -104,7 +104,7 @@ exports.unfollow = async function(params) {
   // if not following unfollowId
   const followRelationCount = await UserFollowUser.find({follower: userId, following: params.unfollowId}).count();
   if (followRelationCount === 0) {
-    return apiError(FORBIDDEN);
+    return apiError(BAD_REQUEST);
   }
   await UserFollowUser.deleteMany({follower: userId, following: params.unfollowId});
 

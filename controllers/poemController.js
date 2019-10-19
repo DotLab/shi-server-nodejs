@@ -2,7 +2,7 @@ const Poem = require('../models/Poem');
 const UserLikePoem = require('../models/UserLikePoem');
 const UserVisitPoem = require('../models/UserVisitPoem');
 const User = require('../models/User');
-const {apiError, apiSuccess, FORBIDDEN, NOT_FOUND} = require('./utils');
+const {apiError, apiSuccess, FORBIDDEN, NOT_FOUND, BAD_REQUEST} = require('./utils');
 const {getUserId, checkTokenValid} = require('../services/tokenService');
 
 exports.create = async function(params) {
@@ -20,7 +20,7 @@ exports.create = async function(params) {
 
   await User.findByIdAndUpdate(userId, {
     $set: {
-      lastActive: new Date(),
+      lastActiveDate: new Date(),
     },
   });
 
@@ -48,7 +48,7 @@ exports.edit = async function(params) {
 
   await User.findByIdAndUpdate(userId, {
     $set: {
-      lastActive: new Date(),
+      lastActiveDate: new Date(),
     },
   });
 
@@ -71,45 +71,45 @@ exports.delete = async function(params) {
 
 exports.like = async function(params) {
   const userId = getUserId(params.token);
-  const poem = await Poem.findById(params.poemId);
-  if (!poem) {
+  const poemCount = await Poem.find({_id: params.poemId}).count();
+  if (poemCount === 0) {
     return apiError(NOT_FOUND);
   }
 
   // If already liked poemId
-  const existing = await UserLikePoem.find({user: userId, poem: params.poemId});
-  if (existing.length) {
-    return apiError(FORBIDDEN);
+  const existingCount = await UserLikePoem.find({user: userId, poem: params.poemId}).count();
+  if (existingCount > 0) {
+    return apiError(BAD_REQUEST);
   }
 
   await UserLikePoem.create({
     user: userId,
-    poem: poem.id,
+    poem: params.poemId,
   });
 
-  const newLikeCount = poem.likeCount + 1;
-  await Poem.findByIdAndUpdate(poem.id, {likeCount: newLikeCount});
+  await Poem.findByIdAndUpdate(params.poemId,
+      {$inc: {likeCount: 1}});
 
   return apiSuccess();
 };
 
 exports.unlike = async function(params) {
   const userId = getUserId(params.token);
-  const poem = await Poem.findById(params.poemId);
-  if (!poem) {
-    return apiError('Poem does not exist');
+  const poemCount = await Poem.find({_id: params.poemId});
+  if (poemCount === 0) {
+    return apiError(NOT_FOUND);
   }
 
   // If did not like poem
-  const likeRelation = await UserLikePoem.findOne({user: userId, poem: poem});
-  if (!likeRelation) {
-    return apiError(FORBIDDEN);
+  const likeRelationCount = await UserLikePoem.find({user: userId, poem: params.poemId}).count();
+  if (likeRelationCount === 0) {
+    return apiError(BAD_REQUEST);
   }
-  await UserLikePoem.findByIdAndRemove(likeRelation.id);
+  await UserLikePoem.deleteMany({user: userId, poem: params.poemId});
 
   // decrement likeCount
-  const newLikeCount = poem.likeCount - 1;
-  await Poem.findByIdAndUpdate(poem.id, {likeCount: newLikeCount});
+  await Poem.findByIdAndUpdate(params.poemId,
+      {$inc: {likeCount: -1}});
 
   return apiSuccess();
 };
@@ -121,29 +121,28 @@ exports.visit = async function(params) {
       return apiError(FORBIDDEN);
     }
     const userId = getUserId(params.token);
-    const user = await User.findById(userId);
     const poem = await Poem.findById(params.poemId);
     if (!poem) {
       return apiError(NOT_FOUND);
     }
 
     // If already visited poemId
-    const existing = await UserVisitPoem.find({user: userId, poem: params.poemId});
-    if (existing.length) {
+    const existingCount = await UserVisitPoem.find({user: userId, poem: params.poemId}).count();
+    if (existingCount > 0) {
       return apiSuccess(poem);
     }
 
     await UserVisitPoem.create({
       user: userId,
-      poem: poem.id,
+      poem: params.poemId,
     });
 
     // Update viewCount for Poem and User
-    const newViewCount = poem.viewCount + 1;
-    await Poem.findByIdAndUpdate(poem.id, {viewCount: newViewCount});
+    await Poem.findByIdAndUpdate(params.poemId,
+        {$inc: {viewCount: 1}});
 
-    const newUserViewCount = user.viewCount + 1;
-    await User.findByIdAndUpdate(userId, {viewCount: newUserViewCount});
+    await User.findByIdAndUpdate(userId,
+        {$inc: {viewCount: 1}});
 
     return apiSuccess(poem);
   } else {

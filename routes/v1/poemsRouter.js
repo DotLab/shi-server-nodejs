@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const poemController = require('../../controllers/poemController');
-const {createTypeChecker, checkToken, STRING, OBJECT_ID} = require('./utils.js');
+const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID} = require('./utils.js');
 
 router.post('/create', createTypeChecker({
   'token': STRING,
   'title': STRING,
   'body': STRING,
   'privacy': STRING,
-}), checkToken(), async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const title = req.body.title;
   const body = req.body.body;
@@ -26,7 +26,7 @@ router.post('/edit', createTypeChecker({
   'title': STRING,
   'body': STRING,
   'privacy': STRING,
-}), checkToken(), async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
   const title = req.body.title;
@@ -42,7 +42,7 @@ router.post('/edit', createTypeChecker({
 router.post('/delete', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
-}), checkToken(), async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
@@ -54,7 +54,7 @@ router.post('/delete', createTypeChecker({
 router.post('/like', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
-}), checkToken(), async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
@@ -66,7 +66,7 @@ router.post('/like', createTypeChecker({
 router.post('/unlike', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
-}), checkToken(), async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
