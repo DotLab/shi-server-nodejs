@@ -11,8 +11,8 @@ exports.create = async function(params) {
     author: userId,
     title: params.title,
     body: params.body,
-    dateWritten: params.date,
-    lastEdit: params.date,
+    writtenDate: params.date,
+    lastEditDate: params.date,
     privacy: params.privacy,
     likeCount: 0,
     viewCount: 0,
@@ -41,7 +41,7 @@ exports.edit = async function(params) {
     $set: {
       title: params.title,
       body: params.body,
-      lastEdit: params.date,
+      lastEditDate: params.date,
       privacy: params.privacy,
     },
   });
