@@ -3,17 +3,19 @@ const UserLikePoem = require('../models/UserLikePoem');
 const UserVisitPoem = require('../models/UserVisitPoem');
 const User = require('../models/User');
 const {apiError, apiSuccess, FORBIDDEN, NOT_FOUND, BAD_REQUEST, UNAUTHORIZED} = require('./utils');
+const {PUBLIC, COMMUNITY} = require('./utils');
 const {getUserId, checkTokenValid} = require('../services/tokenService');
 
 exports.create = async function(params) {
   const userId = getUserId(params.token);
-  await Poem.create({
+  const poem = await Poem.create({
     author: userId,
     title: params.title,
     body: params.body,
     writtenDate: params.date,
     lastEditDate: params.date,
     privacy: params.privacy,
+    align: params.align,
     likeCount: 0,
     viewCount: 0,
   });
@@ -24,7 +26,7 @@ exports.create = async function(params) {
     },
   });
 
-  return apiSuccess();
+  return apiSuccess(poem._id);
 };
 
 exports.edit = async function(params) {
@@ -43,6 +45,7 @@ exports.edit = async function(params) {
       body: params.body,
       lastEditDate: params.date,
       privacy: params.privacy,
+      align: params.align,
     },
   });
 
@@ -151,9 +154,9 @@ exports.detail = async function(params) {
   }
 
   // Poem is open to public, community or private
-  if (poem.privacy === 'public') {
+  if (poem.privacy === PUBLIC) {
     return apiSuccess(poem);
-  } else if (poem.privacy === 'community') {
+  } else if (poem.privacy === COMMUNITY) {
     if (!checkTokenValid(params.token)) {
       return apiError(UNAUTHORIZED);
     }
