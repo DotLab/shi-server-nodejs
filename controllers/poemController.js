@@ -18,6 +18,7 @@ exports.create = async function(params) {
     align: params.align,
     likeCount: 0,
     viewCount: 0,
+    commentCount: 0,
   });
 
   await User.findByIdAndUpdate(userId, {
@@ -179,6 +180,10 @@ exports.comment = async function(params) {
     body: params.comment,
     date: params.date,
   });
+
+  await Poem.findByIdAndUpdate(params.poemId,
+      {$inc: {commentCount: 1}});
+
   return apiSuccess();
 };
 
@@ -197,6 +202,8 @@ exports.commentDelete = async function(params) {
 
   if ((userId == comment.commentAuthor) || (userId == poem.author)) {
     await Comment.findByIdAndRemove(params.commentId);
+    await Poem.findByIdAndUpdate(poem.id,
+        {$inc: {commentCount: -1}});
     return apiSuccess();
   }
   return apiError(FORBIDDEN);

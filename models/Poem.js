@@ -11,4 +11,5 @@ module.exports = mongoose.model('Poem', {
   privacy: String,
   likeCount: Number,
   viewCount: Number,
+  commentCount: Number,
 });
