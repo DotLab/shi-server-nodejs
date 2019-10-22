@@ -163,6 +163,13 @@ exports.detail = async function(params) {
     }
     return apiSuccess(poem);
   } else {
+    if (!checkTokenValid(params.token)) {
+      return apiError(UNAUTHORIZED);
+    }
+    const userId = getUserId(params.token);
+    if (poem.author === userId) {
+      return apiSuccess(poem);
+    }
     return apiError(FORBIDDEN);
   }
 };
