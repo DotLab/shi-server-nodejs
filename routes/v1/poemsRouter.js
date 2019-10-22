@@ -8,15 +8,17 @@ router.post('/create', createTypeChecker({
   'title': STRING,
   'body': STRING,
   'privacy': STRING,
+  'align': STRING,
 }), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const title = req.body.title;
   const body = req.body.body;
   const privacy = req.body.privacy;
+  const align = req.body.align;
   const date = new Date();
 
   res.json(await poemController.create({
-    token, title, body, date, privacy,
+    token, title, body, date, privacy, align,
   }));
 });
 
@@ -26,16 +28,18 @@ router.post('/edit', createTypeChecker({
   'title': STRING,
   'body': STRING,
   'privacy': STRING,
+  'align': STRING,
 }), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
   const title = req.body.title;
   const body = req.body.body;
   const privacy = req.body.privacy;
+  const align = req.body.align;
   const date = new Date();
 
   res.json(await poemController.edit({
-    token, poemId, title, body, date, privacy,
+    token, poemId, title, body, date, privacy, align,
   }));
 });
 

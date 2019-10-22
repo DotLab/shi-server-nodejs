@@ -12,6 +12,10 @@ exports.UNAUTHORIZED = 401;
 exports.FORBIDDEN = 403;
 exports.NOT_FOUND = 404;
 
+exports.PUBLIC = 'public';
+exports.COMMUNITY = 'community';
+exports.PRIVATE = 'private';
+
 exports.apiSuccess = function(payload) {
   return {status: API_SUCCESS, payload};
 };

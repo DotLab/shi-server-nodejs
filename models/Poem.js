@@ -5,6 +5,7 @@ module.exports = mongoose.model('Poem', {
   author: ObjectId,
   title: String,
   body: String,
+  align: String,
   writtenDate: Date,
   lastEditDate: Date,
   privacy: String,
