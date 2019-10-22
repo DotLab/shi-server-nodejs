@@ -7,7 +7,7 @@ const {getUserId, checkTokenValid} = require('../services/tokenService');
 
 exports.create = async function(params) {
   const userId = getUserId(params.token);
-  await Poem.create({
+  const poem = await Poem.create({
     author: userId,
     title: params.title,
     body: params.body,
@@ -24,7 +24,7 @@ exports.create = async function(params) {
     },
   });
 
-  return apiSuccess();
+  return apiSuccess(poem._id);
 };
 
 exports.edit = async function(params) {
