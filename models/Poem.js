@@ -5,9 +5,11 @@ module.exports = mongoose.model('Poem', {
   author: ObjectId,
   title: String,
   body: String,
-  dateWritten: Date,
-  lastEdit: Date,
+  align: String,
+  writtenDate: Date,
+  lastEditDate: Date,
   privacy: String,
   likeCount: Number,
   viewCount: Number,
+  commentCount: Number,
 });

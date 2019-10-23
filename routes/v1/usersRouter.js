@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../../controllers/userController');
-const {createTypeChecker, checkToken, STRING, OBJECT_ID} = require('./utils.js');
+const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID} = require('./utils.js');
 
 router.post('/register', createTypeChecker({
   'userName': STRING,
@@ -35,8 +35,7 @@ router.post('/settings/password/change', createTypeChecker({
   'token': STRING,
   'currentPassword': STRING,
   'newPassword': STRING,
-}), checkToken()
-, async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const currentPassword = req.body.currentPassword;
   const newPassword = req.body.newPassword;
   const token = req.body.token;
@@ -49,8 +48,7 @@ router.post('/settings/password/change', createTypeChecker({
 router.post('/follow', createTypeChecker({
   'token': STRING,
   'followId': OBJECT_ID,
-}), checkToken()
-, async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const followId = req.body.followId;
 
@@ -62,13 +60,22 @@ router.post('/follow', createTypeChecker({
 router.post('/unfollow', createTypeChecker({
   'token': STRING,
   'unfollowId': OBJECT_ID,
-}), checkToken()
-, async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const unfollowId = req.body.unfollowId;
 
   res.json(await userController.unfollow({
     token, unfollowId,
+  }));
+});
+
+router.post('/detail', createTypeChecker({
+  'token': STRING,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+
+  res.json(await userController.detail({
+    token,
   }));
 });
 

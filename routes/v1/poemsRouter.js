@@ -1,23 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const poemController = require('../../controllers/poemController');
-const {createTypeChecker, checkToken, STRING, OBJECT_ID} = require('./utils.js');
+const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID} = require('./utils.js');
 
 router.post('/create', createTypeChecker({
   'token': STRING,
   'title': STRING,
   'body': STRING,
   'privacy': STRING,
-}), checkToken()
-, async (req, res) => {
+  'align': STRING,
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const title = req.body.title;
   const body = req.body.body;
   const privacy = req.body.privacy;
+  const align = req.body.align;
   const date = new Date();
 
   res.json(await poemController.create({
-    token, title, body, date, privacy,
+    token, title, body, date, privacy, align,
   }));
 });
 
@@ -27,25 +28,25 @@ router.post('/edit', createTypeChecker({
   'title': STRING,
   'body': STRING,
   'privacy': STRING,
-}), checkToken()
-, async (req, res) => {
+  'align': STRING,
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
   const title = req.body.title;
   const body = req.body.body;
   const privacy = req.body.privacy;
+  const align = req.body.align;
   const date = new Date();
 
   res.json(await poemController.edit({
-    token, poemId, title, body, date, privacy,
+    token, poemId, title, body, date, privacy, align,
   }));
 });
 
 router.post('/delete', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
-}), checkToken()
-, async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
@@ -57,8 +58,7 @@ router.post('/delete', createTypeChecker({
 router.post('/like', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
-}), checkToken()
-, async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
@@ -70,8 +70,7 @@ router.post('/like', createTypeChecker({
 router.post('/unlike', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
-}), checkToken()
-, async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
@@ -81,10 +80,9 @@ router.post('/unlike', createTypeChecker({
 });
 
 router.post('/visit', createTypeChecker({
-  '-token': STRING,
+  'token': STRING,
   'poemId': OBJECT_ID,
-})
-, async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
 
@@ -92,5 +90,46 @@ router.post('/visit', createTypeChecker({
     token, poemId,
   }));
 });
+
+router.post('/detail', createTypeChecker({
+  '-token': STRING,
+  'poemId': OBJECT_ID,
+}), async (req, res) => {
+  const token = req.body.token;
+  const poemId = req.body.poemId;
+
+  res.json(await poemController.detail({
+    token, poemId,
+  }));
+});
+
+router.post('/comment', createTypeChecker({
+  'token': STRING,
+  'poemId': OBJECT_ID,
+  'comment': STRING,
+
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+  const poemId = req.body.poemId;
+  const comment = req.body.comment;
+  const date = new Date();
+
+  res.json(await poemController.comment({
+    token, poemId, comment, date,
+  }));
+});
+
+router.post('/comment/delete', createTypeChecker({
+  'token': STRING,
+  'commentId': OBJECT_ID,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+  const commentId = req.body.commentId;
+
+  res.json(await poemController.commentDelete({
+    token, commentId,
+  }));
+});
+
 
 module.exports = router;
