@@ -1,12 +1,15 @@
 const User = require('../models/User');
+const Poem = require('../models/Poem');
 const UserFollowUser = require('../models/UserFollowUser');
 const {apiError, apiSuccess, FORBIDDEN} = require('./utils');
+const {PUBLIC, COMMUNITY} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
 const {handleSort} = require('./queryHandler');
 
 const FILTER_ALL = 'all';
 const FILTER_FOLLOW = 'follow';
 const INVALID = 'invalid';
+
 
 exports.listingQuery = async function(params) {
   let query = User.find({}).select('id userName displayName followingCount followerCount lastActiveDate viewCount');
@@ -73,4 +76,24 @@ exports.listingQuery = async function(params) {
   });
 
   return apiSuccess(res);
+};
+
+exports.poems = async function(params) {
+  // if token is valid
+  if (checkTokenValid(params.token)) {
+    const userId = getUserId(params.token);
+    // if user is target user, find all poems
+    if (userId === params.targetUser) {
+      const poems = await Poem.find({author: userId}).exec();
+      return apiSuccess(poems);
+    } else {
+      // else find all public and community poems
+      const poems = await Poem.find({author: params.targetUser, privacy: {$in: [PUBLIC, COMMUNITY]}});
+      return apiSuccess(poems);
+    }
+  }
+
+  // if token is invalid, find all public poems
+  const poems = await Poem.find({author: params.targetUser, privacy: PUBLIC});
+  return apiSuccess(poems);
 };

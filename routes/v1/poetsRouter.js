@@ -1,6 +1,6 @@
 const express = require('express');
 const poetController = require('../../controllers/poetController');
-const {createTypeChecker, STRING, NUMBER} = require('./utils.js');
+const {createTypeChecker, STRING, NUMBER, OBJECT_ID} = require('./utils.js');
 const router = express.Router();
 
 router.post('/', createTypeChecker({
@@ -24,6 +24,18 @@ router.post('/', createTypeChecker({
   res.json(await poetController.listingQuery({
     token, filter, sort, order, limit, skip,
     activeYearLimit, search,
+  }));
+});
+
+router.post('/poems', createTypeChecker({
+  '-token': STRING,
+  'targetUser': OBJECT_ID,
+}), async (req, res) => {
+  const token = req.body.token;
+  const targetUser = req.body.targetUser;
+
+  res.json(await poetController.poems({
+    token, targetUser,
   }));
 });
 
