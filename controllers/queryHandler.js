@@ -9,14 +9,14 @@ exports.handleSort = function(sort, order, query) {
     return;
   }
 
-  if (sort === 'view') {
+  if (sort === 'views') {
     query = (order === 'desc' ? query.sort({viewCount: -1}) : query.sort({viewCount: 1}));
     return;
-  } else if (sort === 'like') {
+  } else if (sort === 'likes') {
     query = (order === 'desc' ? query.sort({followerCount: -1}) : query.sort({followerCount: 1}));
     return;
-  } else if (sort === 'activeDate') {
-    query = (order === 'desc' ? query.sort({lastActive: -1}) : query.sort({lastActive: 1}));
+  } else if (sort === 'date') {
+    query = (order === 'desc' ? query.sort({lastActiveDate: -1}) : query.sort({lastActiveDate: 1}));
     return;
   }
 

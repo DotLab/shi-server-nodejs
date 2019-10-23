@@ -4,7 +4,6 @@ const {createTypeChecker, STRING, NUMBER} = require('./utils.js');
 const router = express.Router();
 
 router.post('/', createTypeChecker({
-  '-token': STRING,
   'filter': STRING,
   '-sort': STRING,
   '-order': STRING,
@@ -20,7 +19,7 @@ router.post('/', createTypeChecker({
   const skip = req.body.skip;
   const order = req.body.order;
   const activeYearLimit = req.body.activeYearLimit;
-  const search = req.body.search;
+  const search = (req.body.search === '' ? undefined : req.body.search);
 
   res.json(await poetController.listingQuery({
     token, filter, sort, order, limit, skip,
