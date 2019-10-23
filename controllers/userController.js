@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Poem = require('../models/Poem');
 const UserFollowUser = require('../models/UserFollowUser');
 const {apiError, apiSuccess, genSecureRandomString, calcPasswordHash} = require('./utils');
 const {createToken, getUserId} = require('../services/tokenService');
@@ -123,4 +124,10 @@ exports.detail = async function(params) {
   const userId = getUserId(params.token);
   const user = await User.findById(userId).select('id displayName followingCount followerCount lastActive viewCount');
   return apiSuccess(user);
+};
+
+exports.poems = async function(params) {
+  const userId = getUserId(params.token);
+  const poems = await Poem.find({author: userId}).exec();
+  return apiSuccess(poems);
 };
