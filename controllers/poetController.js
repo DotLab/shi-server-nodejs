@@ -9,7 +9,7 @@ const FILTER_FOLLOW = 'follow';
 const INVALID = 'invalid';
 
 exports.listingQuery = async function(params) {
-  let query = User.find({}).select('id displayName followingCount followerCount lastActiveDate viewCount');
+  let query = User.find({}).select('id userName displayName followingCount followerCount lastActiveDate viewCount');
 
   // search
   if (params.search != undefined) {
