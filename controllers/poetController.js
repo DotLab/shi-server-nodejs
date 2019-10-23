@@ -83,17 +83,22 @@ exports.poems = async function(params) {
   if (checkTokenValid(params.token)) {
     const userId = getUserId(params.token);
     // if user is target user, find all poems
-    if (userId === params.targetUser) {
+    if (userId === params.poetId) {
       const poems = await Poem.find({author: userId}).exec();
       return apiSuccess(poems);
     } else {
       // else find all public and community poems
-      const poems = await Poem.find({author: params.targetUser, privacy: {$in: [PUBLIC, COMMUNITY]}});
+      const poems = await Poem.find({author: params.poetId, privacy: {$in: [PUBLIC, COMMUNITY]}});
       return apiSuccess(poems);
     }
   }
 
   // if token is invalid, find all public poems
-  const poems = await Poem.find({author: params.targetUser, privacy: PUBLIC});
+  const poems = await Poem.find({author: params.poetId, privacy: PUBLIC});
   return apiSuccess(poems);
+};
+
+exports.detail = async function(params) {
+  const poet = await User.findById(params.poetId).select('id displayName followingCount followerCount lastActive viewCount');
+  return apiSuccess(poet);
 };

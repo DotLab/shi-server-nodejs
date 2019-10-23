@@ -29,13 +29,23 @@ router.post('/', createTypeChecker({
 
 router.post('/poems', createTypeChecker({
   '-token': STRING,
-  'targetUser': OBJECT_ID,
+  'poetId': OBJECT_ID,
 }), async (req, res) => {
   const token = req.body.token;
-  const targetUser = req.body.targetUser;
+  const poetId = req.body.poetId;
 
   res.json(await poetController.poems({
-    token, targetUser,
+    token, poetId,
+  }));
+});
+
+router.post('/detail', createTypeChecker({
+  'poetId': OBJECT_ID,
+}), async (req, res) => {
+  const poetId = req.body.poetId;
+
+  res.json(await poetController.detail({
+    poetId,
   }));
 });
 
