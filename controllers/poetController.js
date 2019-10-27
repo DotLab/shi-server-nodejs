@@ -5,6 +5,8 @@ const {apiError, apiSuccess, FORBIDDEN} = require('./utils');
 const {PUBLIC, COMMUNITY} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
 const {handleSort} = require('./queryHandler');
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 
 const FILTER_ALL = 'all';
 const FILTER_FOLLOW = 'follow';
@@ -99,6 +101,78 @@ exports.poems = async function(params) {
 };
 
 exports.detail = async function(params) {
-  const poet = await User.findById(params.poetId).select('id displayName followingCount followerCount lastActive viewCount');
+  const poet = await User.find({userName: params.userName}).select('id userName displayName followingCount followerCount lastActive viewCount');
   return apiSuccess(poet);
+};
+
+exports.following = async function(params) {
+  const userId = getUserId(params.token);
+  const poets = await UserFollowUser.aggregate([
+    {$match: {follower: new ObjectId(userId)}},
+    {
+      $lookup:
+      {
+        from: 'users',
+        localField: 'following',
+        foreignField: '_id',
+        as: 'follow',
+      },
+    },
+    {
+      $unwind: {path: '$follow'},
+    },
+    {
+      $replaceWith: '$follow',
+    },
+    {
+      $project: {'userName': 1, 'displayName': 1, 'followingCount': 1,
+        'followerCount': 1, 'lastActiveDate': 1, 'viewCount': 1},
+    },
+
+  ]);
+
+  return apiSuccess(poets);
+};
+
+exports.follower = async function(params) {
+  const userId = getUserId(params.token);
+  const poets = await UserFollowUser.aggregate([
+    {$match: {following: new ObjectId(userId)}},
+    {
+      $lookup:
+      {
+        from: 'users',
+        localField: 'follower',
+        foreignField: '_id',
+        as: 'follow',
+      },
+    },
+    {
+      $unwind: {path: '$follow'},
+    },
+    {
+      $replaceWith: '$follow',
+    },
+    {
+      $project: {'userName': 1, 'displayName': 1, 'followingCount': 1,
+        'followerCount': 1, 'lastActiveDate': 1, 'viewCount': 1},
+    },
+
+  ]);
+
+  return apiSuccess(poets);
+};
+
+exports.followStatus = async function(params) {
+  const userId = getUserId(params.token);
+  const arr = [];
+  for (let i = 0; i < params.userIds.length; i++) {
+    const count = await UserFollowUser.find({following: userId, follower: params.userIds[i]}).count();
+    if (count === 0) {
+      arr.push(false);
+    } else {
+      arr.push(true);
+    }
+  }
+  return apiSuccess(arr);
 };

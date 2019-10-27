@@ -1,6 +1,6 @@
 const express = require('express');
 const poetController = require('../../controllers/poetController');
-const {createTypeChecker, STRING, NUMBER, OBJECT_ID} = require('./utils.js');
+const {createTypeChecker, createTokenChecker, STRING, NUMBER, OBJECT_ID} = require('./utils.js');
 const router = express.Router();
 
 router.post('/', createTypeChecker({
@@ -40,12 +40,44 @@ router.post('/poems', createTypeChecker({
 });
 
 router.post('/detail', createTypeChecker({
-  'poetId': OBJECT_ID,
+  'userName': STRING,
 }), async (req, res) => {
-  const poetId = req.body.poetId;
+  const userName = req.body.userName;
 
   res.json(await poetController.detail({
-    poetId,
+    userName,
+  }));
+});
+
+router.post('/following', createTypeChecker({
+  'token': STRING,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+
+  res.json(await poetController.following({
+    token,
+  }));
+});
+
+router.post('/follower', createTypeChecker({
+  'token': STRING,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+
+  res.json(await poetController.follower({
+    token,
+  }));
+});
+
+router.post('/followingStatus', createTypeChecker({
+  'token': STRING,
+  'userIds': [OBJECT_ID],
+}), async (req, res) => {
+  const token = req.body.token;
+  const userIds = req.body.userIds;
+
+  res.json(await poetController.followStatus({
+    token, userIds,
   }));
 });
 
