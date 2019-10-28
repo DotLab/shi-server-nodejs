@@ -106,7 +106,8 @@ exports.detail = async function(params) {
 };
 
 exports.following = async function(params) {
-  const userId = getUserId(params.token);
+  const Id = await User.find({userName: params.userName}).select('id');
+  const userId = Id[0].id;
   const poets = await UserFollowUser.aggregate([
     {$match: {follower: new ObjectId(userId)}},
     {
@@ -135,7 +136,8 @@ exports.following = async function(params) {
 };
 
 exports.follower = async function(params) {
-  const userId = getUserId(params.token);
+  const Id = await User.find({userName: params.userName}).select('id');
+  const userId = Id[0].id;
   const poets = await UserFollowUser.aggregate([
     {$match: {following: new ObjectId(userId)}},
     {
@@ -167,7 +169,7 @@ exports.followStatus = async function(params) {
   const userId = getUserId(params.token);
   const arr = [];
   for (let i = 0; i < params.userIds.length; i++) {
-    const count = await UserFollowUser.find({following: userId, follower: params.userIds[i]}).count();
+    const count = await UserFollowUser.find({following: params.userIds[i], follower: userId}).count();
     if (count === 0) {
       arr.push(false);
     } else {

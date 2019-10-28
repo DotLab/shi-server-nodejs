@@ -50,22 +50,22 @@ router.post('/detail', createTypeChecker({
 });
 
 router.post('/following', createTypeChecker({
-  'token': STRING,
-}), createTokenChecker(), async (req, res) => {
-  const token = req.body.token;
+  'userName': STRING,
+}), async (req, res) => {
+  const userName = req.body.userName;
 
   res.json(await poetController.following({
-    token,
+    userName,
   }));
 });
 
 router.post('/follower', createTypeChecker({
-  'token': STRING,
-}), createTokenChecker(), async (req, res) => {
-  const token = req.body.token;
+  'userName': STRING,
+}), async (req, res) => {
+  const userName = req.body.userName;
 
   res.json(await poetController.follower({
-    token,
+    userName,
   }));
 });
 
