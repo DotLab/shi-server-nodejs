@@ -7,7 +7,7 @@ const {PUBLIC, COMMUNITY} = require('./utils');
 const {getUserId, checkTokenValid} = require('../services/tokenService');
 const {updateLastActiveDate} = require('./userController');
 const mongoose = require('mongoose');
-const ObjectId = mongoose.Schema.Types.ObjectId;
+const ObjectId = mongoose.Types.ObjectId;
 
 exports.create = async function(params) {
   const userId = getUserId(params.token);
@@ -78,10 +78,10 @@ exports.like = async function(params) {
       userId: userId,
       poemId: params.poemId,
     }),
+
     Poem.findByIdAndUpdate(params.poemId,
         {$inc: {likeCount: 1}}),
-
-  ]).exec();
+  ]);
 
   return apiSuccess();
 };
@@ -103,7 +103,7 @@ exports.unlike = async function(params) {
     UserLikePoem.deleteMany({userId: userId, poemId: params.poemId}),
     Poem.findByIdAndUpdate(params.poemId,
         {$inc: {likeCount: -1}}),
-  ]).exec();
+  ]);
 
   return apiSuccess();
 };
@@ -134,7 +134,7 @@ exports.visit = async function(params) {
         {$inc: {viewCount: 1}}),
     User.findByIdAndUpdate(poem.authorId,
         {$inc: {viewCount: 1}}),
-  ]).exec();
+  ]);
 
   return apiSuccess();
 };
