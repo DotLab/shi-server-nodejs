@@ -131,5 +131,4 @@ router.post('/comment/delete', createTypeChecker({
   }));
 });
 
-
 module.exports = router;
