@@ -81,7 +81,7 @@ exports.like = async function(params) {
       poemId: params.poemId,
     }),
     Poem.findByIdAndUpdate(params.poemId, {
-      $inc: {likeCount: 1}
+      $inc: {likeCount: 1},
     }),
   ]);
 
@@ -102,9 +102,9 @@ exports.unlike = async function(params) {
 
   await Promise.all([
     UserLikePoem.deleteMany({userId: userId, poemId: params.poemId}),
-    Poem.findByIdAndUpdate(params.poemId, 
-      {$inc: {likeCount: -1}
-    }),
+    Poem.findByIdAndUpdate(params.poemId,
+        {$inc: {likeCount: -1},
+        }),
   ]);
 
   return apiSuccess();
@@ -130,11 +130,11 @@ exports.visit = async function(params) {
   // Update viewCount for Poem and User
   await Promise.all([
     Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {viewCount: 1}
-      }),
+        {$inc: {viewCount: 1},
+        }),
     User.findByIdAndUpdate(poem.authorId,
-        {$inc: {viewCount: 1}
-      }),
+        {$inc: {viewCount: 1},
+        }),
   ]);
 
   return apiSuccess();
@@ -167,43 +167,40 @@ exports.detail = async function(params) {
 };
 
 exports.comment = async function(params) {
-  const userId = getUserId(params.token);
-
+  const userId = tokenService.getUserId(params.token);
   const poem = await Poem.findById(params.poemId);
   if (!poem) return apiError(NOT_FOUND);
 
   await Comment.create({
-    poemAuthor: poem.author,
-    commentAuthor: userId,
+    poemAuthorId: poem.authorId,
+    commentAuthorId: userId,
     poemId: params.poemId,
     body: params.comment,
     date: params.date,
   });
-
-  await Poem.findByIdAndUpdate(params.poemId,
-      {$inc: {commentCount: 1}});
+  Poem.findByIdAndUpdate(params.poemId,
+      {$inc: {commentCount: 1},
+      });
 
   return apiSuccess();
 };
 
 exports.commentDelete = async function(params) {
-  const userId = getUserId(params.token);
-
+  const userId = tokenService.getUserId(params.token);
   const comment = await Comment.findById(params.commentId);
   if (!comment) {
     return apiError(NOT_FOUND);
   }
-
-  const poem = await Poem.findById(comment.poem);
-  if (!poem) {
-    return apiError(NOT_FOUND);
+  if ((userId !== comment.commentAuthorId) && (userId !== comment.poemAuthorId)) {
+    return apiError(FORBIDDEN);
   }
 
-  if ((userId == comment.commentAuthor) || (userId == poem.author)) {
-    await Comment.findByIdAndRemove(params.commentId);
-    await Poem.findByIdAndUpdate(poem.id,
-        {$inc: {commentCount: -1}});
-    return apiSuccess();
-  }
-  return apiError(FORBIDDEN);
+  await Promise.all([
+    Comment.findByIdAndRemove(params.commentId),
+    Poem.findByIdAndUpdate(comment.poemId,
+        {$inc: {commentCount: -1},
+        }),
+  ]);
+
+  return apiSuccess();
 };
