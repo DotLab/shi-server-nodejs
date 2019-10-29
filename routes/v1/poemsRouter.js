@@ -107,7 +107,6 @@ router.post('/comment', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
   'comment': STRING,
-
 }), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
