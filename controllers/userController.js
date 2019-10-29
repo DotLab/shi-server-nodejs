@@ -105,7 +105,7 @@ exports.unfollow = async function(params) {
   // if not following unfollowId
   const followRelationCount = await UserFollowUser.find({follower: userId, following: params.unfollowId}).count();
   if (followRelationCount === 0) {
-    return apiError(BAD_REQUEST);
+    return apiError(FORBIDDEN);
   }
   await UserFollowUser.deleteMany({follower: userId, following: params.unfollowId});
 
@@ -124,4 +124,12 @@ exports.detail = async function(params) {
   const userId = getUserId(params.token);
   const user = await User.findById(userId).select('id userName displayName followingCount followerCount lastActive viewCount');
   return apiSuccess(user);
+};
+
+exports.updateLastActiveDate = function(userId) {
+  User.findByIdAndUpdate(userId, {
+    $set: {
+      lastActiveDate: new Date(),
+    },
+  });
 };

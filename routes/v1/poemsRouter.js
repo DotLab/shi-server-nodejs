@@ -7,18 +7,18 @@ router.post('/create', createTypeChecker({
   'token': STRING,
   'title': STRING,
   'body': STRING,
-  'privacy': STRING,
+  'visibility': STRING,
   'align': STRING,
 }), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const title = req.body.title;
   const body = req.body.body;
-  const privacy = req.body.privacy;
+  const visibility = req.body.visibility;
   const align = req.body.align;
   const date = new Date();
 
   res.json(await poemController.create({
-    token, title, body, date, privacy, align,
+    token, title, body, date, visibility, align,
   }));
 });
 
@@ -27,19 +27,19 @@ router.post('/edit', createTypeChecker({
   'poemId': OBJECT_ID,
   'title': STRING,
   'body': STRING,
-  'privacy': STRING,
+  'visibility': STRING,
   'align': STRING,
 }), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemId = req.body.poemId;
   const title = req.body.title;
   const body = req.body.body;
-  const privacy = req.body.privacy;
+  const visibility = req.body.visibility;
   const align = req.body.align;
   const date = new Date();
 
   res.json(await poemController.edit({
-    token, poemId, title, body, date, privacy, align,
+    token, poemId, title, body, date, visibility, align,
   }));
 });
 
@@ -130,6 +130,5 @@ router.post('/comment/delete', createTypeChecker({
     token, commentId,
   }));
 });
-
 
 module.exports = router;
