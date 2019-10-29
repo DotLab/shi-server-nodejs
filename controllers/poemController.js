@@ -173,7 +173,7 @@ exports.comment = async function(params) {
   if (!poem) return apiError(NOT_FOUND);
 
   await Comment.create({
-    poemAuthor: poem.author,
+    poemAuthor: poem.authorId,
     commentAuthor: userId,
     poemId: params.poemId,
     body: params.comment,
@@ -199,7 +199,7 @@ exports.commentDelete = async function(params) {
     return apiError(NOT_FOUND);
   }
 
-  if ((userId == comment.commentAuthor) || (userId == poem.author)) {
+  if ((userId == comment.commentAuthor) || (userId == poem.authorId)) {
     await Comment.findByIdAndRemove(params.commentId);
     await Poem.findByIdAndUpdate(poem.id,
         {$inc: {commentCount: -1}});
