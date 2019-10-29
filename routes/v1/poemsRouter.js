@@ -131,4 +131,16 @@ router.post('/comment/delete', createTypeChecker({
   }));
 });
 
+router.post('/likeStatus', createTypeChecker({
+  'token': STRING,
+  'poemIds': [OBJECT_ID],
+}), async (req, res) => {
+  const token = req.body.token;
+  const poemIds = req.body.poemIds;
+
+  res.json(await poemController.likeStatus({
+    token, poemIds,
+  }));
+});
+
 module.exports = router;

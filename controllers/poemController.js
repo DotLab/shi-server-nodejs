@@ -207,3 +207,17 @@ exports.commentDelete = async function(params) {
   }
   return apiError(FORBIDDEN);
 };
+
+exports.likeStatus = async function(params) {
+  const userId = getUserId(params.token);
+  const arr = [];
+  for (let i = 0; i < params.poemIds.length; i++) {
+    const count = await UserLikePoem.find({poem: params.poemIds[i], userId: userId}).count();
+    if (count === 0) {
+      arr.push(false);
+    } else {
+      arr.push(true);
+    }
+  }
+  return apiSuccess(arr);
+};
