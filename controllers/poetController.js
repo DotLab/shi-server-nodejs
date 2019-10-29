@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const Poem = require('../models/Poem');
 const UserFollowUser = require('../models/UserFollowUser');
-const {apiError, apiSuccess, FORBIDDEN} = require('./utils');
+const {apiError, apiSuccess, FORBIDDEN, BAD_REQUEST} = require('./utils');
 const {PUBLIC, COMMUNITY} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
 const {handleSort} = require('./queryHandler');
@@ -101,8 +101,21 @@ exports.poems = async function(params) {
 };
 
 exports.detail = async function(params) {
-  const poet = await User.find({userName: params.userName}).select('id userName displayName followingCount followerCount lastActive viewCount');
-  return apiSuccess(poet);
+  if (params.userName !== undefined) {
+    const poet = await User.find({userName: params.userName}).select('id userName displayName followingCount followerCount lastActive viewCount');
+    if (!poet) {
+      return apiError(BAD_REQUEST);
+    }
+    return apiSuccess(poet);
+  }
+
+  if (params.userId !== undefined) {
+    const poet = await User.findById(params.userId).select('id userName displayName followingCount followerCount lastActive viewCount');
+    if (!poet) {
+      return apiError(BAD_REQUEST);
+    }
+    return apiSuccess(poet);
+  }
 };
 
 exports.following = async function(params) {

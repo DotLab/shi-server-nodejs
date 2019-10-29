@@ -40,12 +40,14 @@ router.post('/poems', createTypeChecker({
 });
 
 router.post('/detail', createTypeChecker({
-  'userName': STRING,
+  '-userName': STRING,
+  '-userId': OBJECT_ID,
 }), async (req, res) => {
   const userName = req.body.userName;
+  const userId = req.body.userId;
 
   res.json(await poetController.detail({
-    userName,
+    userName, userId,
   }));
 });
 
