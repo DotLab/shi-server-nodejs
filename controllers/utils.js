@@ -36,3 +36,7 @@ exports.calcPasswordHash = function(password, salt) {
   hasher.update(salt);
   return hasher.digest(PASSWORD_ENCODING);
 };
+
+exports.TEXT_ALIGN_START = 'TEXT_ALIGN_START';
+exports.TEXT_ALIGN_CENTER = 'TEXT_ALIGN_CENTER';
+exports.TEXT_ALIGN_END = 'TEXT_ALIGN_END';

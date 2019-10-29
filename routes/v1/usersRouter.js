@@ -69,24 +69,4 @@ router.post('/unfollow', createTypeChecker({
   }));
 });
 
-router.post('/detail', createTypeChecker({
-  'token': STRING,
-}), createTokenChecker(), async (req, res) => {
-  const token = req.body.token;
-
-  res.json(await userController.detail({
-    token,
-  }));
-});
-
-router.post('/poems', createTypeChecker({
-  'token': STRING,
-}), createTokenChecker(), async (req, res) => {
-  const token = req.body.token;
-
-  res.json(await userController.poems({
-    token,
-  }));
-});
-
 module.exports = router;

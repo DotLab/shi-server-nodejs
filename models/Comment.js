@@ -4,7 +4,7 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 module.exports = mongoose.model('Comment', {
   poemAuthor: ObjectId,
   commentAuthor: ObjectId,
-  poem: ObjectId,
+  poemId: ObjectId,
   body: String,
   date: Date,
 });
