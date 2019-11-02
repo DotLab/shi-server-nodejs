@@ -42,5 +42,5 @@ exports.TEXT_ALIGN_CENTER = 'TEXT_ALIGN_CENTER';
 exports.TEXT_ALIGN_END = 'TEXT_ALIGN_END';
 
 exports.FILTER_ALL = 'all';
-exports.FILTER_FOLLOW = 'follow';
+exports.FILTER_FOLLOWING = 'following';
 exports.INVALID = 'invalid';

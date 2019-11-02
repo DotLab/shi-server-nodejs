@@ -6,7 +6,6 @@ const QUERY_VIEWS = 'views';
 const QUERY_LIKES = 'likes';
 const QUERY_ALPHABETICAL = 'alphabetical';
 
-
 exports.handleSort = function(sort, order, query) {
   if (sort !== undefined) {
     if (order !== QUERY_ASC && order !== QUERY_DESC) {
@@ -33,4 +32,3 @@ exports.handleSort = function(sort, order, query) {
 
   return INVALID;
 };
-

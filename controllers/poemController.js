@@ -8,7 +8,7 @@ const tokenService = require('../services/tokenService');
 const userController = require('./userController');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-const {FILTER_ALL, FILTER_FOLLOW, INVALID} = require('./utils');
+const {FILTER_ALL, FILTER_FOLLOWING, INVALID} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
 
 exports.create = async function(params) {
@@ -231,7 +231,7 @@ exports.listingQuery = async function(params) {
   }
 
   // filter
-  if (params.filter === FILTER_FOLLOW) {
+  if (params.filter === FILTER_FOLLOWING) {
     if (!checkTokenValid(params.token)) {
       return apiError(FORBIDDEN);
     }
