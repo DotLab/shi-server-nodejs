@@ -40,3 +40,7 @@ exports.calcPasswordHash = function(password, salt) {
 exports.TEXT_ALIGN_START = 'TEXT_ALIGN_START';
 exports.TEXT_ALIGN_CENTER = 'TEXT_ALIGN_CENTER';
 exports.TEXT_ALIGN_END = 'TEXT_ALIGN_END';
+
+exports.FILTER_ALL = 'all';
+exports.FILTER_FOLLOWING = 'following';
+exports.INVALID = 'invalid';
