@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const poemController = require('../../controllers/poemController');
-const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID} = require('./utils.js');
+const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID, NUMBER} = require('./utils.js');
 
 router.post('/create', createTypeChecker({
   'token': STRING,
@@ -139,6 +139,28 @@ router.post('/likeStatus', createTypeChecker({
 
   res.json(await poemController.likeStatus({
     token, poemIds,
+  }));
+});
+
+router.post('/home', createTypeChecker({
+  'filter': STRING,
+  '-sort': STRING,
+  '-order': STRING,
+  'limit': NUMBER,
+  'skip': NUMBER,
+  '-search': STRING,
+}), async (req, res) => {
+  const token = req.body.token;
+  const filter = req.body.filter;
+  const sort = req.body.sort;
+  const limit = req.body.limit;
+  const skip = req.body.skip;
+  const order = req.body.order;
+  const search = (req.body.search === '' ? undefined : req.body.search);
+
+  res.json(await poemController.listingQuery({
+    token, filter, sort, order, limit, skip,
+    search,
   }));
 });
 

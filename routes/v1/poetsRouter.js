@@ -74,7 +74,7 @@ router.post('/follower', createTypeChecker({
 router.post('/followingStatus', createTypeChecker({
   'token': STRING,
   'userIds': [OBJECT_ID],
-}), async (req, res) => {
+}), createTypeChecker(), async (req, res) => {
   const token = req.body.token;
   const userIds = req.body.userIds;
 

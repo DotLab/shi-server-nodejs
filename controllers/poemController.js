@@ -8,6 +8,8 @@ const tokenService = require('../services/tokenService');
 const userController = require('./userController');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
+const {FILTER_ALL, FILTER_FOLLOW, INVALID} = require('./utils');
+const {checkTokenValid, getUserId} = require('../services/tokenService');
 
 exports.create = async function(params) {
   const userId = tokenService.getUserId(params.token);
@@ -217,4 +219,66 @@ exports.likeStatus = async function(params) {
     }
   }
   return apiSuccess(arr);
+};
+
+
+exports.listingQuery = async function(params) {
+  let query = Poem.find({});
+
+  // search
+  if (params.search != undefined) {
+    query = query.find({title: params.search});
+  }
+
+  // filter
+  if (params.filter === FILTER_FOLLOW) {
+    if (!checkTokenValid(params.token)) {
+      return apiError(FORBIDDEN);
+    }
+    const userId = getUserId(params.token);
+    const following = await UserFollowUser.find({follower: userId}).select('following');
+    const arr = [];
+    following.forEach((x) => arr.push(x.following));
+    query = query.find({_id: {$in: arr}});
+  } else if (params.filter !== FILTER_ALL) {
+    return apiError(FORBIDDEN);
+  }
+
+  // sort and order
+  if (handleSort(params.sort, params.order, query) == INVALID) {
+    return apiError(FORBIDDEN);
+  }
+
+  // skip
+  query = query.skip(params.skip);
+
+  // limit
+  query = query.limit(params.limit);
+
+  const res = await query.lean().exec();
+
+  if (!checkTokenValid(params.token)) {
+    return apiSuccess(res);
+  }
+
+  const userId = getUserId(params.token);
+
+  // for (let i = 0; i < res.length; i++) {
+  //   const count = await UserFollowUser.find({
+  //     follower: userId, following: res[i]._id,
+  //   }).count().exec();
+  //   res[i].isFollowing = count === 0 ? false : true;
+  // }
+
+  const counts = await Promise.all(res.map((x) => {
+    return UserFollowUser.find({
+      follower: userId, following: x._id,
+    }).count().exec();
+  }));
+
+  counts.forEach((count, i) => {
+    res[i].isFollowing = count === 0 ? false : true;
+  });
+
+  return apiSuccess(res);
 };

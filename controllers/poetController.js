@@ -7,10 +7,7 @@ const {checkTokenValid, getUserId} = require('../services/tokenService');
 const {handleSort} = require('./queryHandler');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-
-const FILTER_ALL = 'all';
-const FILTER_FOLLOW = 'follow';
-const INVALID = 'invalid';
+const {FILTER_ALL, FILTER_FOLLOW, INVALID} = require('./utils');
 
 
 exports.listingQuery = async function(params) {
@@ -59,13 +56,6 @@ exports.listingQuery = async function(params) {
   }
 
   const userId = getUserId(params.token);
-
-  // for (let i = 0; i < res.length; i++) {
-  //   const count = await UserFollowUser.find({
-  //     follower: userId, following: res[i]._id,
-  //   }).count().exec();
-  //   res[i].isFollowing = count === 0 ? false : true;
-  // }
 
   const counts = await Promise.all(res.map((x) => {
     return UserFollowUser.find({
