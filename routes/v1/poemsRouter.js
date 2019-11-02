@@ -164,4 +164,18 @@ router.post('/home', createTypeChecker({
   }));
 });
 
+router.post('/test', async (req, res) => {
+  const token = req.body.token;
+  const filter = req.body.filter;
+  const sort = req.body.sort;
+  const limit = req.body.limit;
+  const skip = req.body.skip;
+  const order = req.body.order;
+  const search = (req.body.search === '' ? undefined : req.body.search);
+
+  res.json(await poemController.listingQuery({
+    token, filter, sort, order, limit, skip,
+    search,
+  }));
+});
 module.exports = router;

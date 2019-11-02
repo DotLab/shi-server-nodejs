@@ -4,7 +4,7 @@ const UserFollowUser = require('../models/UserFollowUser');
 const {apiError, apiSuccess, FORBIDDEN, BAD_REQUEST} = require('./utils');
 const {PUBLIC, COMMUNITY} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
-const {handleSort} = require('./queryHandler');
+const {handlePoetSort} = require('./queryHandler');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const {FILTER_ALL, FILTER_FOLLOWING, INVALID} = require('./utils');
@@ -39,7 +39,7 @@ exports.listingQuery = async function(params) {
   }
 
   // sort and order
-  if (handleSort(params.sort, params.order, query) == INVALID) {
+  if (handlePoetSort(params.sort, params.order, query) == INVALID) {
     return apiError(FORBIDDEN);
   }
 

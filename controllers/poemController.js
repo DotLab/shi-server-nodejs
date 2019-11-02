@@ -1,6 +1,7 @@
 const Poem = require('../models/Poem');
 const UserLikePoem = require('../models/UserLikePoem');
 const UserVisitPoem = require('../models/UserVisitPoem');
+const UserFollowUser = require('../models/UserFollowUser');
 const User = require('../models/User');
 const {apiError, apiSuccess, FORBIDDEN, NOT_FOUND, BAD_REQUEST, UNAUTHORIZED} = require('./utils');
 const {PUBLIC, COMMUNITY} = require('./utils');
@@ -10,6 +11,7 @@ const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const {FILTER_ALL, FILTER_FOLLOWING, INVALID} = require('./utils');
 const {checkTokenValid, getUserId} = require('../services/tokenService');
+const {handlePoemSort} = require('./queryHandler');
 
 exports.create = async function(params) {
   const userId = tokenService.getUserId(params.token);
@@ -225,28 +227,58 @@ exports.likeStatus = async function(params) {
 exports.listingQuery = async function(params) {
   let query = Poem.find({});
 
-  // search
-  if (params.search != undefined) {
-    query = query.find({title: params.search});
-  }
-
   // filter
   if (params.filter === FILTER_FOLLOWING) {
     if (!checkTokenValid(params.token)) {
       return apiError(FORBIDDEN);
     }
     const userId = getUserId(params.token);
-    const following = await UserFollowUser.find({follower: userId}).select('following');
-    const arr = [];
-    following.forEach((x) => arr.push(x.following));
-    query = query.find({_id: {$in: arr}});
-  } else if (params.filter !== FILTER_ALL) {
-    return apiError(FORBIDDEN);
+    // poemFollowingFilter(userId, query);
+    query = UserFollowUser.aggregate([
+      {$match: {follower: new ObjectId(userId)}},
+      {
+        $lookup:
+        {
+          from: 'users',
+          localField: 'following',
+          foreignField: '_id',
+          as: 'follow',
+        },
+      },
+      {
+        $unwind: {path: '$follow'},
+      },
+      {
+        $replaceWith: '$follow',
+      },
+      {
+        $lookup:
+        {
+          from: 'poems',
+          localField: '_id',
+          foreignField: 'authorId',
+          as: 'poems',
+        },
+      },
+      {
+        $unwind: {path: '$poems'},
+      },
+      {
+        $replaceWith: '$poems',
+      },
+    ]);
+  } else if (params.filter === FILTER_ALL) {
+    return apiError(BAD_REQUEST);
+  }
+
+  // search
+  if (params.search != undefined) {
+    query = query.find({title: params.search});
   }
 
   // sort and order
-  if (handleSort(params.sort, params.order, query) == INVALID) {
-    return apiError(FORBIDDEN);
+  if (handlePoemSort(params.sort, params.order, query) == INVALID) {
+    return apiError(BAD_REQUEST);
   }
 
   // skip
@@ -255,30 +287,6 @@ exports.listingQuery = async function(params) {
   // limit
   query = query.limit(params.limit);
 
-  const res = await query.lean().exec();
-
-  if (!checkTokenValid(params.token)) {
-    return apiSuccess(res);
-  }
-
-  const userId = getUserId(params.token);
-
-  // for (let i = 0; i < res.length; i++) {
-  //   const count = await UserFollowUser.find({
-  //     follower: userId, following: res[i]._id,
-  //   }).count().exec();
-  //   res[i].isFollowing = count === 0 ? false : true;
-  // }
-
-  const counts = await Promise.all(res.map((x) => {
-    return UserFollowUser.find({
-      follower: userId, following: x._id,
-    }).count().exec();
-  }));
-
-  counts.forEach((count, i) => {
-    res[i].isFollowing = count === 0 ? false : true;
-  });
-
+  const res = await query.exec();
   return apiSuccess(res);
 };
