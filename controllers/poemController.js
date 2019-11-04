@@ -266,8 +266,13 @@ exports.listingQuery = async function(params) {
       {
         $replaceWith: '$poems',
       },
+      {$match:
+        {visibility: {$in: [PUBLIC, COMMUNITY]}},
+      },
     ]);
   } else if (params.filter === FILTER_ALL) {
+    query = Poem.find({visibility: {$in: [PUBLIC]}});
+  } else {
     return apiError(BAD_REQUEST);
   }
 
