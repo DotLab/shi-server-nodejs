@@ -133,7 +133,7 @@ router.post('/comment/delete', createTypeChecker({
 router.post('/likeStatus', createTypeChecker({
   'token': STRING,
   'poemIds': [OBJECT_ID],
-}), async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemIds = req.body.poemIds;
 
@@ -164,18 +164,14 @@ router.post('/home', createTypeChecker({
   }));
 });
 
-router.post('/test', async (req, res) => {
-  const token = req.body.token;
-  const filter = req.body.filter;
-  const sort = req.body.sort;
-  const limit = req.body.limit;
-  const skip = req.body.skip;
-  const order = req.body.order;
-  const search = (req.body.search === '' ? undefined : req.body.search);
+router.post('/likeCount', createTypeChecker({
+  'poemId': OBJECT_ID,
+}), async (req, res) => {
+  const poemId = req.body.poemId;
 
-  res.json(await poemController.listingQuery({
-    token, filter, sort, order, limit, skip,
-    search,
+  res.json(await poemController.likeCount({
+    poemId,
   }));
 });
+
 module.exports = router;

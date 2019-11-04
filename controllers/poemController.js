@@ -213,7 +213,7 @@ exports.likeStatus = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const arr = [];
   for (let i = 0; i < params.poemIds.length; i++) {
-    const count = await UserLikePoem.find({poem: params.poemIds[i], userId: userId}).count();
+    const count = await UserLikePoem.find({poemId: params.poemIds[i], userId: userId}).count();
     if (count === 0) {
       arr.push(false);
     } else {
@@ -222,7 +222,6 @@ exports.likeStatus = async function(params) {
   }
   return apiSuccess(arr);
 };
-
 
 exports.listingQuery = async function(params) {
   let query = Poem.find({});
@@ -293,5 +292,28 @@ exports.listingQuery = async function(params) {
   query = query.limit(params.limit);
 
   const res = await query.exec();
+  if (!checkTokenValid(params.token)) {
+    return apiSuccess(res);
+  }
+
+  const userId = getUserId(params.token);
+  const counts = await Promise.all(res.map((x) => {
+    return UserLikePoem.find({
+      userId: userId, poemId: x._id,
+    }).count().exec();
+  }));
+
+  counts.forEach((count, i) => {
+    res[i].liked = count === 0 ? false : true;
+  });
+
   return apiSuccess(res);
+};
+
+exports.likeCount = async function(params) {
+  const count = await Poem.findById(params.poemId).select('likeCount');
+  if (!count) {
+    return apiError(BAD_REQUEST);
+  }
+  return apiSuccess(count);
 };
