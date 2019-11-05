@@ -1,5 +1,4 @@
 const User = require('../models/User');
-const Poem = require('../models/Poem');
 const UserFollowUser = require('../models/UserFollowUser');
 const {apiError, apiSuccess, genSecureRandomString, calcPasswordHash} = require('./utils');
 const {createToken, getUserId} = require('../services/tokenService');

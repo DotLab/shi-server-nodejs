@@ -80,7 +80,7 @@ exports.like = async function(params) {
       poemId: params.poemId,
     }),
     Poem.findByIdAndUpdate(params.poemId, {
-      $inc: {likeCount: 1}
+      $inc: {likeCount: 1},
     }),
   ]);
 
@@ -101,8 +101,8 @@ exports.unlike = async function(params) {
 
   await Promise.all([
     UserLikePoem.deleteMany({userId: userId, poemId: params.poemId}),
-    Poem.findByIdAndUpdate(params.poemId, 
-      {$inc: {likeCount: -1}
+    Poem.findByIdAndUpdate(params.poemId, {
+      $inc: {likeCount: -1},
     }),
   ]);
 
@@ -128,12 +128,12 @@ exports.visit = async function(params) {
   const poem = await Poem.findById(params.poemId);
   // Update viewCount for Poem and User
   await Promise.all([
-    Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {viewCount: 1}
-      }),
-    User.findByIdAndUpdate(poem.authorId,
-        {$inc: {viewCount: 1}
-      }),
+    Poem.findByIdAndUpdate(params.poemId, {
+      $inc: {viewCount: 1},
+    }),
+    User.findByIdAndUpdate(poem.authorId, {
+      $inc: {viewCount: 1},
+    }),
   ]);
 
   return apiSuccess();
