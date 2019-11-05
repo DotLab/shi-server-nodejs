@@ -321,12 +321,10 @@ exports.commentList = async function(params) {
   }
 
   const comments = await Comment.find({poemId: params.poemId}).lean().exec();
-
   const userId = tokenService.getUserId(params.token);
   comments.forEach((comment) => {
     comment.isOwner = (comment.poemAuthorId == userId || comment.commentAuthorId == userId) ? true : false;
   });
-
 
   return apiSuccess(comments);
 };
