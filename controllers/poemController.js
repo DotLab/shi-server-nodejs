@@ -177,6 +177,7 @@ exports.comment = async function(params) {
     body: params.comment,
     date: params.date,
   });
+  // No await since commentCount is not used in the response
   Poem.findByIdAndUpdate(params.poemId, {
     $inc: {commentCount: 1},
   }).exec();
