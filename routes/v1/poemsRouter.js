@@ -104,4 +104,31 @@ router.post('/detail', createTypeChecker({
   }));
 });
 
+router.post('/comment', createTypeChecker({
+  'token': STRING,
+  'poemId': OBJECT_ID,
+  'comment': STRING,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+  const poemId = req.body.poemId;
+  const comment = req.body.comment;
+  const date = new Date();
+
+  res.json(await poemController.createComment({
+    token, poemId, comment, date,
+  }));
+});
+
+router.post('/comment/delete', createTypeChecker({
+  'token': STRING,
+  'commentId': OBJECT_ID,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+  const commentId = req.body.commentId;
+
+  res.json(await poemController.deleteComment({
+    token, commentId,
+  }));
+});
+
 module.exports = router;

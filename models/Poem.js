@@ -12,4 +12,5 @@ module.exports = mongoose.model('Poem', {
   visibility: {type: String, enum: [PUBLIC, COMMUNITY, PRIVATE]},
   likeCount: Number,
   viewCount: Number,
+  commentCount: Number,
 });

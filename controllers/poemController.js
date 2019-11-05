@@ -159,8 +159,48 @@ exports.detail = async function(params) {
     return apiError(UNAUTHORIZED);
   }
   const userId = tokenService.getUserId(params.token);
-  if (poem.authorId === userId) {
+  if (poem.authorId.toString() === userId) {
     return apiSuccess(poem);
   }
   return apiError(FORBIDDEN);
+};
+
+exports.createComment = async function(params) {
+  const userId = tokenService.getUserId(params.token);
+  const poem = await Poem.findById(params.poemId);
+  if (!poem) return apiError(NOT_FOUND);
+
+  await Comment.create({
+    poemAuthorId: poem.authorId,
+    commentAuthorId: userId,
+    poemId: params.poemId,
+    body: params.comment,
+    date: params.date,
+  });
+  // No await since commentCount is not used in the response
+  Poem.findByIdAndUpdate(params.poemId, {
+    $inc: {commentCount: 1},
+  }).exec();
+
+  return apiSuccess();
+};
+
+exports.deleteComment = async function(params) {
+  const userId = tokenService.getUserId(params.token);
+  const comment = await Comment.findById(params.commentId);
+  if (!comment) {
+    return apiError(NOT_FOUND);
+  }
+  if (userId !== comment.commentAuthorId.toString() && userId !== comment.poemAuthorId.toString()) {
+    return apiError(FORBIDDEN);
+  }
+
+  await Promise.all([
+    Comment.findByIdAndRemove(params.commentId),
+    Poem.findByIdAndUpdate(comment.poemId, {
+      $inc: {commentCount: -1},
+    }),
+  ]);
+
+  return apiSuccess();
 };
