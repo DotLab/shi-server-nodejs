@@ -199,7 +199,7 @@ exports.commentDelete = async function(params) {
   if (!comment) {
     return apiError(NOT_FOUND);
   }
-  if ((userId !== comment.commentAuthorId) && (userId !== comment.poemAuthorId)) {
+  if ((userId != comment.commentAuthorId) && (userId != comment.poemAuthorId)) {
     return apiError(FORBIDDEN);
   }
 
