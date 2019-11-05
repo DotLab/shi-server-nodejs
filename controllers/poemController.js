@@ -26,7 +26,6 @@ exports.create = async function(params) {
     align: params.align,
     likeCount: 0,
     viewCount: 0,
-    commentCount: 0,
   });
   // No await since lastActiveDate is not used in the response
   userController.updateLastActiveDate(userId);
@@ -107,9 +106,9 @@ exports.unlike = async function(params) {
 
   await Promise.all([
     UserLikePoem.deleteMany({userId: userId, poemId: params.poemId}),
-    Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {likeCount: -1},
-        }),
+    Poem.findByIdAndUpdate(params.poemId, {
+      $inc: {likeCount: -1},
+    }),
   ]);
 
   return apiSuccess();
@@ -137,12 +136,12 @@ exports.visit = async function(params) {
   const poem = await Poem.findById(params.poemId);
   // Update viewCount for Poem and User
   await Promise.all([
-    Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {viewCount: 1},
-        }),
-    User.findByIdAndUpdate(poem.authorId,
-        {$inc: {viewCount: 1},
-        }),
+    Poem.findByIdAndUpdate(params.poemId, {
+      $inc: {viewCount: 1},
+    }),
+    User.findByIdAndUpdate(poem.authorId, {
+      $inc: {viewCount: 1},
+    }),
   ]);
 
   return apiSuccess();
@@ -168,13 +167,13 @@ exports.detail = async function(params) {
     return apiError(UNAUTHORIZED);
   }
   const userId = tokenService.getUserId(params.token);
-  if (poem.authorId == userId) {
+  if (poem.authorId.toString() === userId) {
     return apiSuccess(poem);
   }
   return apiError(FORBIDDEN);
 };
 
-exports.comment = async function(params) {
+exports.createComment = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const poem = await Poem.findById(params.poemId);
   if (!poem) return apiError(NOT_FOUND);
@@ -186,28 +185,29 @@ exports.comment = async function(params) {
     body: params.comment,
     date: params.date,
   });
-  await Poem.findByIdAndUpdate(params.poemId,
-      {$inc: {commentCount: 1},
-      });
+  // No await since commentCount is not used in the response
+  Poem.findByIdAndUpdate(params.poemId, {
+    $inc: {commentCount: 1},
+  }).exec();
 
   return apiSuccess();
 };
 
-exports.commentDelete = async function(params) {
+exports.deleteComment = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const comment = await Comment.findById(params.commentId);
   if (!comment) {
     return apiError(NOT_FOUND);
   }
-  if ((userId != comment.commentAuthorId) && (userId != comment.poemAuthorId)) {
+  if (userId !== comment.commentAuthorId.toString() && userId !== comment.poemAuthorId.toString()) {
     return apiError(FORBIDDEN);
   }
 
   await Promise.all([
     Comment.findByIdAndRemove(params.commentId),
-    Poem.findByIdAndUpdate(comment.poemId,
-        {$inc: {commentCount: -1},
-        }),
+    Poem.findByIdAndUpdate(comment.poemId, {
+      $inc: {commentCount: -1},
+    }),
   ]);
 
   return apiSuccess();
