@@ -1,4 +1,5 @@
 const express = require('express');
+// eslint-disable-next-line new-cap
 const router = express.Router();
 const poemController = require('../../controllers/poemController');
 const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID} = require('./utils.js');
@@ -113,7 +114,7 @@ router.post('/comment', createTypeChecker({
   const comment = req.body.comment;
   const date = new Date();
 
-  res.json(await poemController.comment({
+  res.json(await poemController.createComment({
     token, poemId, comment, date,
   }));
 });
@@ -125,7 +126,7 @@ router.post('/comment/delete', createTypeChecker({
   const token = req.body.token;
   const commentId = req.body.commentId;
 
-  res.json(await poemController.commentDelete({
+  res.json(await poemController.deleteComment({
     token, commentId,
   }));
 });
