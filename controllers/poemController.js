@@ -321,7 +321,6 @@ exports.commentList = async function(params) {
   }
 
   const comments = await Comment.find({poemId: params.poemId}).lean().exec();
-  console.log(comments);
 
   const userId = tokenService.getUserId(params.token);
   comments.forEach((comment) => {
