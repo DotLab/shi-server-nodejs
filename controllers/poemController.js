@@ -168,7 +168,7 @@ exports.detail = async function(params) {
     return apiError(UNAUTHORIZED);
   }
   const userId = tokenService.getUserId(params.token);
-  if (poem.authorId === userId) {
+  if (poem.authorId == userId) {
     return apiSuccess(poem);
   }
   return apiError(FORBIDDEN);
