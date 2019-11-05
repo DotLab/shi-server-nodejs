@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.create = async function(params) {
-  const userId = tokenService.tokenService.getUserId(params.token);
+  const userId = tokenService.getUserId(params.token);
   const poem = await Poem.create({
     authorId: userId,
     title: params.title,
@@ -21,7 +21,6 @@ exports.create = async function(params) {
     align: params.align,
     likeCount: 0,
     viewCount: 0,
-    commentCount: 0,
   });
   // No await since lastActiveDate is not used in the response
   userController.updateLastActiveDate(userId);
@@ -30,7 +29,7 @@ exports.create = async function(params) {
 };
 
 exports.edit = async function(params) {
-  const userId = tokenService.tokenService.getUserId(params.token);
+  const userId = tokenService.getUserId(params.token);
   const poem = await Poem.findOne({_id: new ObjectId(params.poemId), authorId: new ObjectId(userId)});
   if (!poem) {
     return apiError(NOT_FOUND);
@@ -52,7 +51,7 @@ exports.edit = async function(params) {
 };
 
 exports.delete = async function(params) {
-  const userId = tokenService.tokenService.getUserId(params.token);
+  const userId = tokenService.getUserId(params.token);
   const poem = await Poem.findOne({_id: new ObjectId(params.poemId), authorId: new ObjectId(userId)});
   if (!poem) {
     return apiError(NOT_FOUND);
@@ -64,7 +63,7 @@ exports.delete = async function(params) {
 };
 
 exports.like = async function(params) {
-  const userId = tokenService.tokenService.getUserId(params.token);
+  const userId = tokenService.getUserId(params.token);
   const poemCount = await Poem.find({_id: params.poemId}).count();
   if (poemCount === 0) {
     return apiError(NOT_FOUND);
@@ -80,9 +79,9 @@ exports.like = async function(params) {
       userId: userId,
       poemId: params.poemId,
     }),
-
-    Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {likeCount: 1}}),
+    Poem.findByIdAndUpdate(params.poemId, {
+      $inc: {likeCount: 1}
+    }),
   ]);
 
   return apiSuccess();
@@ -94,8 +93,7 @@ exports.unlike = async function(params) {
   if (poemCount === 0) {
     return apiError(NOT_FOUND);
   }
-
-  // If did not like poem
+  // If the user did not like poem
   const likeRelationCount = await UserLikePoem.find({userId: userId, poemId: params.poemId}).count();
   if (likeRelationCount === 0) {
     return apiError(BAD_REQUEST);
@@ -103,8 +101,9 @@ exports.unlike = async function(params) {
 
   await Promise.all([
     UserLikePoem.deleteMany({userId: userId, poemId: params.poemId}),
-    Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {likeCount: -1}}),
+    Poem.findByIdAndUpdate(params.poemId, 
+      {$inc: {likeCount: -1}
+    }),
   ]);
 
   return apiSuccess();
@@ -116,7 +115,6 @@ exports.visit = async function(params) {
   if (poemCount === 0) {
     return apiError(NOT_FOUND);
   }
-
   // If already visited poemId
   const existingCount = await UserVisitPoem.find({userId: userId, poemId: params.poemId}).count();
   if (existingCount > 0) {
@@ -127,15 +125,15 @@ exports.visit = async function(params) {
     userId: userId,
     poemId: params.poemId,
   });
-
   const poem = await Poem.findById(params.poemId);
-
   // Update viewCount for Poem and User
   await Promise.all([
     Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {viewCount: 1}}),
+        {$inc: {viewCount: 1}
+      }),
     User.findByIdAndUpdate(poem.authorId,
-        {$inc: {viewCount: 1}}),
+        {$inc: {viewCount: 1}
+      }),
   ]);
 
   return apiSuccess();
@@ -147,24 +145,24 @@ exports.detail = async function(params) {
     return apiError(NOT_FOUND);
   }
 
-  // Poem is open to public, community or private
   if (poem.visibility === PUBLIC) {
     return apiSuccess(poem);
-  } else if (poem.visibility === COMMUNITY) {
+  }
+  if (poem.visibility === COMMUNITY) {
     if (!tokenService.checkTokenValid(params.token)) {
       return apiError(UNAUTHORIZED);
     }
     return apiSuccess(poem);
-  } else {
-    if (!tokenService.checkTokenValid(params.token)) {
-      return apiError(UNAUTHORIZED);
-    }
-    const userId = tokenService.getUserId(params.token);
-    if (poem.authorId === userId) {
-      return apiSuccess(poem);
-    }
-    return apiError(FORBIDDEN);
   }
+  // poem.visibility === PRIVATE
+  if (!tokenService.checkTokenValid(params.token)) {
+    return apiError(UNAUTHORIZED);
+  }
+  const userId = tokenService.getUserId(params.token);
+  if (poem.authorId === userId) {
+    return apiSuccess(poem);
+  }
+  return apiError(FORBIDDEN);
 };
 
 exports.comment = async function(params) {
