@@ -165,7 +165,7 @@ exports.detail = async function(params) {
   return apiError(FORBIDDEN);
 };
 
-exports.comment = async function(params) {
+exports.createComment = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const poem = await Poem.findById(params.poemId);
   if (!poem) return apiError(NOT_FOUND);
@@ -185,7 +185,7 @@ exports.comment = async function(params) {
   return apiSuccess();
 };
 
-exports.commentDelete = async function(params) {
+exports.deleteComment = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const comment = await Comment.findById(params.commentId);
   if (!comment) {
