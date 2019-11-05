@@ -159,7 +159,7 @@ exports.detail = async function(params) {
     return apiError(UNAUTHORIZED);
   }
   const userId = tokenService.getUserId(params.token);
-  if (poem.authorId == userId) {
+  if (poem.authorId.toString() === userId) {
     return apiSuccess(poem);
   }
   return apiError(FORBIDDEN);
@@ -191,7 +191,7 @@ exports.commentDelete = async function(params) {
   if (!comment) {
     return apiError(NOT_FOUND);
   }
-  if (userId != comment.commentAuthorId && userId != comment.poemAuthorId) {
+  if (userId !== comment.commentAuthorId.toString() && userId !== comment.poemAuthorId.toString()) {
     return apiError(FORBIDDEN);
   }
 
