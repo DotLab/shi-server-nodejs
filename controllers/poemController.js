@@ -319,10 +319,19 @@ exports.commentList = async function(params) {
     return apiError(BAD_REQUEST);
   }
 
-  const comments = await Comment.find({poemId: params.poemId}).lean().exec();
+  const comments = await Comment.find({poemId: params.poemId}).limit(params.limit).lean().exec();
   const userId = tokenService.getUserId(params.token);
+
   comments.forEach((comment) => {
     comment.isOwner = (comment.poemAuthorId == userId || comment.commentAuthorId == userId) ? true : false;
+  });
+
+  const commentAuthorNames = await Promise.all(comments.map((x) => {
+    return User.findById(x.commentAuthorId).select('displayName').exec();
+  }));
+
+  commentAuthorNames.forEach((name, i) => {
+    comments[i].commentAuthorName = name.displayName;
   });
 
   return apiSuccess(comments);
