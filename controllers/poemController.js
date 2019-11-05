@@ -11,7 +11,6 @@ const userController = require('./userController');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const {FILTER_ALL, FILTER_FOLLOWING, INVALID} = require('./utils');
-const {checkTokenValid, getUserId} = require('../services/tokenService');
 const {handlePoemSort} = require('./queryHandler');
 
 exports.create = async function(params) {
@@ -232,7 +231,7 @@ exports.listingQuery = async function(params) {
 
   // filter
   if (params.filter === FILTER_FOLLOWING) {
-    if (!checkTokenValid(params.token)) {
+    if (!tokenService.checkTokenValid(params.token)) {
       return apiError(FORBIDDEN);
     }
     const userId = tokenService.getUserId(params.token);
@@ -296,7 +295,7 @@ exports.listingQuery = async function(params) {
   query = query.limit(params.limit);
 
   const res = await query.exec();
-  if (!checkTokenValid(params.token)) {
+  if (!tokenService.checkTokenValid(params.token)) {
     return apiSuccess(res);
   }
 
