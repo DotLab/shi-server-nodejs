@@ -235,7 +235,7 @@ exports.listingQuery = async function(params) {
     if (!checkTokenValid(params.token)) {
       return apiError(FORBIDDEN);
     }
-    const userId = getUserId(params.token);
+    const userId = tokenService.getUserId(params.token);
     // poemFollowingFilter(userId, query);
     query = UserFollowUser.aggregate([
       {$match: {follower: new ObjectId(userId)}},
@@ -300,7 +300,7 @@ exports.listingQuery = async function(params) {
     return apiSuccess(res);
   }
 
-  const userId = getUserId(params.token);
+  const userId = tokenService.getUserId(params.token);
   const counts = await Promise.all(res.map((x) => {
     return UserLikePoem.find({
       userId: userId, poemId: x._id,
@@ -323,9 +323,9 @@ exports.commentList = async function(params) {
   const comments = await Comment.find({poemId: params.poemId}).lean().exec();
   console.log(comments);
 
-  const userId = getUserId(params.token);
+  const userId = tokenService.getUserId(params.token);
   comments.forEach((comment) => {
-    comment.isOwner = (comment.poemAuthorId === userId || comment.commentAuthorId === userId) ? true : false;
+    comment.isOwner = (comment.poemAuthorId == userId || comment.commentAuthorId == userId) ? true : false;
   });
 
 
