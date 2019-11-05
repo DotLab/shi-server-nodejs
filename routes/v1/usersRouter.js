@@ -1,4 +1,5 @@
 const express = require('express');
+// eslint-disable-next-line new-cap
 const router = express.Router();
 const userController = require('../../controllers/userController');
 const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID} = require('./utils.js');
@@ -66,6 +67,16 @@ router.post('/unfollow', createTypeChecker({
 
   res.json(await userController.unfollow({
     token, unfollowId,
+  }));
+});
+
+router.post('/detail', createTypeChecker({
+  'token': STRING,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+
+  res.json(await userController.detail({
+    token,
   }));
 });
 

@@ -1,4 +1,5 @@
 const express = require('express');
+// eslint-disable-next-line new-cap
 const router = express.Router();
 const poemController = require('../../controllers/poemController');
 const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID} = require('./utils.js');
