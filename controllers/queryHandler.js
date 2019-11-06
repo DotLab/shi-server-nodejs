@@ -33,7 +33,7 @@ exports.handleSort = function(sort, order, query) {
 };
 
 exports.handlePoemSort = function(sort, order, query) {
-  if (sort !== undefined) {
+  if (sort) {
     if (order !== QUERY_ASC && order !== QUERY_DESC) {
       throw new Error();
     }

@@ -10,7 +10,7 @@ const tokenService = require('../services/tokenService');
 const userController = require('./userController');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-const {FILTER_ALL, FILTER_FOLLOWING, INVALID} = require('./utils');
+const {FILTER_ALL, FILTER_FOLLOWING} = require('./utils');
 const {handlePoemSort} = require('./queryHandler');
 
 exports.create = async function(params) {
@@ -241,8 +241,7 @@ exports.listingQuery = async function(params) {
     query = UserFollowUser.aggregate([
       {$match: {follower: new ObjectId(userId)}},
       {
-        $lookup:
-        {
+        $lookup: {
           from: 'users',
           localField: 'following',
           foreignField: '_id',
@@ -256,8 +255,7 @@ exports.listingQuery = async function(params) {
         $replaceWith: '$follow',
       },
       {
-        $lookup:
-        {
+        $lookup: {
           from: 'poems',
           localField: '_id',
           foreignField: 'authorId',
@@ -281,12 +279,14 @@ exports.listingQuery = async function(params) {
   }
 
   // search
-  if (params.search != undefined) {
+  if (params.search) {
     query = query.find({title: params.search});
   }
 
   // sort and order
-  if (handlePoemSort(params.sort, params.order, query) == INVALID) {
+  try {
+    handlePoemSort(params.sort, params.order, query);
+  } catch (error) {
     return apiError(BAD_REQUEST);
   }
 
@@ -296,7 +296,7 @@ exports.listingQuery = async function(params) {
   // limit
   query = query.limit(params.limit);
 
-  const res = await query.exec();
+  const res = await query.lean().exec();
   if (!tokenService.checkTokenValid(params.token)) {
     return apiSuccess(res);
   }
