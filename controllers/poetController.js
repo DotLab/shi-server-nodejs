@@ -7,21 +7,21 @@ const {checkTokenValid, getUserId} = require('../services/tokenService');
 const {handleSort} = require('./queryHandler');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-const {FILTER_ALL, FILTER_FOLLOWING, INVALID} = require('./utils');
-
+const {FILTER_ALL, FILTER_FOLLOWING} = require('./utils');
 
 exports.listingQuery = async function(params) {
   let query = User.find({}).select('id userName displayName followingCount followerCount lastActiveDate viewCount');
 
   // search
-  if (params.search != undefined) {
+  console.log(!params.activeYearLimit);
+  if (params.search) {
     query = query.find({displayName: params.search});
   }
 
   // activeYearLimit
-  if (params.activeYearLimit != undefined) {
-    const d = new Date().setFullYear(params.activeYearLimit + 1);
-    query = query.find({lastActive: {$lt: d}});
+  if (params.activeYearLimit) {
+    const date = new Date().setFullYear(params.activeYearLimit + 1);
+    query = query.find({lastActive: {$lt: date}});
   }
 
   // filter
@@ -30,16 +30,17 @@ exports.listingQuery = async function(params) {
       return apiError(FORBIDDEN);
     }
     const userId = getUserId(params.token);
-    const following = await UserFollowUser.find({follower: userId}).select('following');
-    const arr = [];
-    following.forEach((x) => arr.push(x.following));
+    const followRelations = await UserFollowUser.find({follower: userId}).select('following');
+    const arr = followRelations.map((x) => x.following);
     query = query.find({_id: {$in: arr}});
   } else if (params.filter !== FILTER_ALL) {
     return apiError(FORBIDDEN);
   }
 
   // sort and order
-  if (handleSort(params.sort, params.order, query) == INVALID) {
+  try {
+    handleSort(params.sort, params.order, query);
+  } catch (error) {
     return apiError(FORBIDDEN);
   }
 
@@ -51,16 +52,17 @@ exports.listingQuery = async function(params) {
 
   const res = await query.lean().exec();
 
+  // If User is not logged in, do not include follow relation
   if (!checkTokenValid(params.token)) {
     return apiSuccess(res);
   }
 
   const userId = getUserId(params.token);
-  const counts = await Promise.all(res.map((x) => {
-    return UserFollowUser.find({
+  const counts = await Promise.all(res.map((x) =>
+    UserFollowUser.find({
       follower: userId, following: x._id,
-    }).count().exec();
-  }));
+    }).count().exec()
+  ));
 
   counts.forEach((count, i) => {
     res[i].isFollowing = count === 0 ? false : true;
@@ -113,8 +115,7 @@ exports.following = async function(params) {
   const poets = await UserFollowUser.aggregate([
     {$match: {follower: new ObjectId(userId)}},
     {
-      $lookup:
-      {
+      $lookup: {
         from: 'users',
         localField: 'following',
         foreignField: '_id',
@@ -128,8 +129,8 @@ exports.following = async function(params) {
       $replaceWith: '$follow',
     },
     {
-      $project: {'userName': 1, 'displayName': 1, 'followingCount': 1,
-        'followerCount': 1, 'lastActiveDate': 1, 'viewCount': 1},
+      $project: {userName: 1, displayName: 1, followingCount: 1,
+        followerCount: 1, lastActiveDate: 1, viewCount: 1},
     },
 
   ]);
@@ -143,8 +144,7 @@ exports.follower = async function(params) {
   const poets = await UserFollowUser.aggregate([
     {$match: {following: new ObjectId(userId)}},
     {
-      $lookup:
-      {
+      $lookup: {
         from: 'users',
         localField: 'follower',
         foreignField: '_id',
@@ -161,7 +161,6 @@ exports.follower = async function(params) {
       $project: {'userName': 1, 'displayName': 1, 'followingCount': 1,
         'followerCount': 1, 'lastActiveDate': 1, 'viewCount': 1},
     },
-
   ]);
 
   return apiSuccess(poets);
@@ -170,13 +169,14 @@ exports.follower = async function(params) {
 exports.followStatus = async function(params) {
   const userId = getUserId(params.token);
   const arr = [];
-  for (let i = 0; i < params.userIds.length; i++) {
-    const count = await UserFollowUser.find({following: params.userIds[i], follower: userId}).count();
-    if (count === 0) {
-      arr.push(false);
-    } else {
-      arr.push(true);
-    }
-  }
+  const counts = await Promise.all(params.userIds.map((x) =>
+    UserFollowUser.find({
+      follower: userId, following: x,
+    }).count().exec()
+  ));
+  counts.forEach((count, i) => {
+    arr[i] = count === 0 ? false : true;
+  });
+
   return apiSuccess(arr);
 };

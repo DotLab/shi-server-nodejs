@@ -205,16 +205,18 @@ exports.deleteComment = async function(params) {
   return apiSuccess();
 };
 
-exports.likeStatus = async function(params) {
+exports.getLikeStatus = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const arr = [];
-  for (let i = 0; i < params.poemIds.length; i++) {
-    const count = await UserLikePoem.find({poem: params.poemIds[i], userId: userId}).count();
-    if (count === 0) {
-      arr.push(false);
-    } else {
-      arr.push(true);
-    }
-  }
+
+  const counts = await Promise.all(params.poemIds.map((x) =>
+    UserLikePoem.find({
+      poemId: x, userId: userId,
+    }).count().exec()
+  ));
+  counts.forEach((count, i) => {
+    arr[i] = count === 0 ? false : true;
+  });
+
   return apiSuccess(arr);
 };

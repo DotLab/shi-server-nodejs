@@ -138,7 +138,7 @@ router.post('/likeStatus', createTypeChecker({
   const token = req.body.token;
   const poemIds = req.body.poemIds;
 
-  res.json(await poemController.likeStatus({
+  res.json(await poemController.getLikeStatus({
     token, poemIds,
   }));
 });
