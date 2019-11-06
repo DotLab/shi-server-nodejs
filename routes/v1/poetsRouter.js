@@ -1,7 +1,8 @@
 const express = require('express');
-const poetController = require('../../controllers/poetController');
-const {createTypeChecker, createTokenChecker, STRING, NUMBER, OBJECT_ID} = require('./utils.js');
+// eslint-disable-next-line new-cap
 const router = express.Router();
+const poetController = require('../../controllers/poetController');
+const {createTypeChecker, STRING, NUMBER, OBJECT_ID} = require('./utils.js');
 
 router.post('/', createTypeChecker({
   'filter': STRING,
