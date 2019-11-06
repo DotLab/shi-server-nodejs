@@ -3,17 +3,16 @@ const Poem = require('../models/Poem');
 const UserFollowUser = require('../models/UserFollowUser');
 const {apiError, apiSuccess, FORBIDDEN, BAD_REQUEST} = require('./utils');
 const {PUBLIC, COMMUNITY} = require('./utils');
-const {checkTokenValid, getUserId} = require('../services/tokenService');
 const {handleSort} = require('./queryHandler');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const {FILTER_ALL, FILTER_FOLLOWING} = require('./utils');
+const tokenService = require('../services/tokenService');
 
 exports.listingQuery = async function(params) {
   let query = User.find({}).select('id userName displayName followingCount followerCount lastActiveDate viewCount');
 
   // search
-  console.log(!params.activeYearLimit);
   if (params.search) {
     query = query.find({displayName: params.search});
   }
@@ -26,10 +25,10 @@ exports.listingQuery = async function(params) {
 
   // filter
   if (params.filter === FILTER_FOLLOWING) {
-    if (!checkTokenValid(params.token)) {
+    if (!tokenService.checkTokenValid(params.token)) {
       return apiError(FORBIDDEN);
     }
-    const userId = getUserId(params.token);
+    const userId = tokenService.getUserId(params.token);
     const followRelations = await UserFollowUser.find({follower: userId}).select('following');
     const arr = followRelations.map((x) => x.following);
     query = query.find({_id: {$in: arr}});
@@ -53,11 +52,11 @@ exports.listingQuery = async function(params) {
   const res = await query.lean().exec();
 
   // If User is not logged in, do not include follow relation
-  if (!checkTokenValid(params.token)) {
+  if (!tokenService.checkTokenValid(params.token)) {
     return apiSuccess(res);
   }
 
-  const userId = getUserId(params.token);
+  const userId = tokenService.getUserId(params.token);
   const counts = await Promise.all(res.map((x) =>
     UserFollowUser.find({
       follower: userId, following: x._id,
@@ -73,8 +72,8 @@ exports.listingQuery = async function(params) {
 
 exports.poems = async function(params) {
   // if token is valid
-  if (checkTokenValid(params.token)) {
-    const userId = getUserId(params.token);
+  if (tokenService.checkTokenValid(params.token)) {
+    const userId = tokenService.getUserId(params.token);
     // if user is target user, find all poems
     if (userId === params.poetId) {
       const poems = await Poem.find({authorId: userId}).sort({writtenDate: -1}).exec();
@@ -167,7 +166,7 @@ exports.follower = async function(params) {
 };
 
 exports.followStatus = async function(params) {
-  const userId = getUserId(params.token);
+  const userId = tokenService.getUserId(params.token);
   const arr = [];
   const counts = await Promise.all(params.userIds.map((x) =>
     UserFollowUser.find({
