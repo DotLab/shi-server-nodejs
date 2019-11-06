@@ -9,7 +9,7 @@ const tokenService = require('../services/tokenService');
 const userController = require('./userController');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
-const {FILTER_ALL, FILTER_FOLLOWING, INVALID} = require('./utils');
+const {FILTER_ALL, FILTER_FOLLOWING} = require('./utils');
 const {handlePoemSort} = require('./queryHandler');
 
 exports.create = async function(params) {
