@@ -1,5 +1,4 @@
 const User = require('../models/User');
-const Poem = require('../models/Poem');
 const UserFollowUser = require('../models/UserFollowUser');
 const {apiError, apiSuccess, genSecureRandomString, calcPasswordHash} = require('./utils');
 const {createToken, getUserId} = require('../services/tokenService');
@@ -132,4 +131,10 @@ exports.updateLastActiveDate = function(userId) {
       lastActiveDate: new Date(),
     },
   });
+};
+
+exports.detail = async function(params) {
+  const userId = getUserId(params.token);
+  const user = await User.findById(userId).select('id displayName followingCount followerCount lastActive viewCount');
+  return apiSuccess(user);
 };

@@ -1,4 +1,3 @@
-const {INVALID} = require('./utils');
 const QUERY_ASC = 'asc';
 const QUERY_DESC = 'desc';
 const QUERY_DATE = 'date';
@@ -6,10 +5,15 @@ const QUERY_VIEWS = 'views';
 const QUERY_LIKES = 'likes';
 const QUERY_ALPHABETICAL = 'alphabetical';
 
+<<<<<<< HEAD
 exports.handlePoetSort = function(sort, order, query) {
   if (sort !== undefined) {
+=======
+exports.handleSort = function(sort, order, query) {
+  if (sort) {
+>>>>>>> f820e1ba0ed09970c3a56fff50598f67fdf72f9c
     if (order !== QUERY_ASC && order !== QUERY_DESC) {
-      return INVALID;
+      throw new Error();
     }
   } else {
     query = query.sort({viewCount: -1});
@@ -30,7 +34,7 @@ exports.handlePoetSort = function(sort, order, query) {
     return;
   }
 
-  return INVALID;
+  throw new Error();
 };
 
 exports.handlePoemSort = function(sort, order, query) {

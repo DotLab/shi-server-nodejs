@@ -10,7 +10,6 @@ const userController = require('./userController');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const {FILTER_ALL, FILTER_FOLLOWING, INVALID} = require('./utils');
-const {checkTokenValid, getUserId} = require('../services/tokenService');
 const {handlePoemSort} = require('./queryHandler');
 
 exports.create = async function(params) {
@@ -25,7 +24,6 @@ exports.create = async function(params) {
     align: params.align,
     likeCount: 0,
     viewCount: 0,
-    commentCount: 0,
   });
   // No await since lastActiveDate is not used in the response
   userController.updateLastActiveDate(userId);
@@ -106,9 +104,9 @@ exports.unlike = async function(params) {
 
   await Promise.all([
     UserLikePoem.deleteMany({userId: userId, poemId: params.poemId}),
-    Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {likeCount: -1},
-        }),
+    Poem.findByIdAndUpdate(params.poemId, {
+      $inc: {likeCount: -1},
+    }),
   ]);
 
   return apiSuccess();
@@ -133,12 +131,12 @@ exports.visit = async function(params) {
   const poem = await Poem.findById(params.poemId);
   // Update viewCount for Poem and User
   await Promise.all([
-    Poem.findByIdAndUpdate(params.poemId,
-        {$inc: {viewCount: 1},
-        }),
-    User.findByIdAndUpdate(poem.authorId,
-        {$inc: {viewCount: 1},
-        }),
+    Poem.findByIdAndUpdate(params.poemId, {
+      $inc: {viewCount: 1},
+    }),
+    User.findByIdAndUpdate(poem.authorId, {
+      $inc: {viewCount: 1},
+    }),
   ]);
 
   return apiSuccess();
@@ -164,13 +162,13 @@ exports.detail = async function(params) {
     return apiError(UNAUTHORIZED);
   }
   const userId = tokenService.getUserId(params.token);
-  if (poem.authorId === userId) {
+  if (poem.authorId.toString() === userId) {
     return apiSuccess(poem);
   }
   return apiError(FORBIDDEN);
 };
 
-exports.comment = async function(params) {
+exports.createComment = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const poem = await Poem.findById(params.poemId);
   if (!poem) return apiError(NOT_FOUND);
@@ -182,44 +180,47 @@ exports.comment = async function(params) {
     body: params.comment,
     date: params.date,
   });
-  Poem.findByIdAndUpdate(params.poemId,
-      {$inc: {commentCount: 1},
-      });
+  // No await since commentCount is not used in the response
+  Poem.findByIdAndUpdate(params.poemId, {
+    $inc: {commentCount: 1},
+  }).exec();
 
   return apiSuccess();
 };
 
-exports.commentDelete = async function(params) {
+exports.deleteComment = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const comment = await Comment.findById(params.commentId);
   if (!comment) {
     return apiError(NOT_FOUND);
   }
-  if ((userId !== comment.commentAuthorId) && (userId !== comment.poemAuthorId)) {
+  if (userId !== comment.commentAuthorId.toString() && userId !== comment.poemAuthorId.toString()) {
     return apiError(FORBIDDEN);
   }
 
   await Promise.all([
     Comment.findByIdAndRemove(params.commentId),
-    Poem.findByIdAndUpdate(comment.poemId,
-        {$inc: {commentCount: -1},
-        }),
+    Poem.findByIdAndUpdate(comment.poemId, {
+      $inc: {commentCount: -1},
+    }),
   ]);
 
   return apiSuccess();
 };
 
-exports.likeStatus = async function(params) {
+exports.getLikeStatus = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const arr = [];
-  for (let i = 0; i < params.poemIds.length; i++) {
-    const count = await UserLikePoem.find({poemId: params.poemIds[i], userId: userId}).count();
-    if (count === 0) {
-      arr.push(false);
-    } else {
-      arr.push(true);
-    }
-  }
+
+  const counts = await Promise.all(params.poemIds.map((x) =>
+    UserLikePoem.find({
+      poemId: x, userId: userId,
+    }).count().exec()
+  ));
+  counts.forEach((count, i) => {
+    arr[i] = count === 0 ? false : true;
+  });
+
   return apiSuccess(arr);
 };
 
@@ -228,16 +229,15 @@ exports.listingQuery = async function(params) {
 
   // filter
   if (params.filter === FILTER_FOLLOWING) {
-    if (!checkTokenValid(params.token)) {
+    if (!tokenService.checkTokenValid(params.token)) {
       return apiError(FORBIDDEN);
     }
-    const userId = getUserId(params.token);
+    const userId = tokenService.getUserId(params.token);
     // poemFollowingFilter(userId, query);
     query = UserFollowUser.aggregate([
       {$match: {follower: new ObjectId(userId)}},
       {
-        $lookup:
-        {
+        $lookup: {
           from: 'users',
           localField: 'following',
           foreignField: '_id',
@@ -251,8 +251,7 @@ exports.listingQuery = async function(params) {
         $replaceWith: '$follow',
       },
       {
-        $lookup:
-        {
+        $lookup: {
           from: 'poems',
           localField: '_id',
           foreignField: 'authorId',
@@ -276,12 +275,14 @@ exports.listingQuery = async function(params) {
   }
 
   // search
-  if (params.search != undefined) {
+  if (params.search) {
     query = query.find({title: params.search});
   }
 
   // sort and order
-  if (handlePoemSort(params.sort, params.order, query) == INVALID) {
+  try {
+    handlePoemSort(params.sort, params.order, query);
+  } catch (error) {
     return apiError(BAD_REQUEST);
   }
 
@@ -291,12 +292,12 @@ exports.listingQuery = async function(params) {
   // limit
   query = query.limit(params.limit);
 
-  const res = await query.exec();
-  if (!checkTokenValid(params.token)) {
+  const res = await query.lean().exec();
+  if (!tokenService.checkTokenValid(params.token)) {
     return apiSuccess(res);
   }
 
-  const userId = getUserId(params.token);
+  const userId = tokenService.getUserId(params.token);
   const counts = await Promise.all(res.map((x) => {
     return UserLikePoem.find({
       userId: userId, poemId: x._id,
@@ -308,12 +309,4 @@ exports.listingQuery = async function(params) {
   });
 
   return apiSuccess(res);
-};
-
-exports.likeCount = async function(params) {
-  const count = await Poem.findById(params.poemId).select('likeCount');
-  if (!count) {
-    return apiError(BAD_REQUEST);
-  }
-  return apiSuccess(count);
 };
