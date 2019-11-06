@@ -67,13 +67,13 @@ exports.changePassword = async function(params) {
 exports.follow = async function(params) {
   const userId = getUserId(params.token);
 
-  const followingCount = await User.find({_id: params.followId}).count();
+  const followingCount = await User.find({_id: params.followId}).countDocuments();
   if (followingCount === 0) {
     return apiError(NOT_FOUND);
   }
 
   // If already following followId
-  const existingCount = await UserFollowUser.find({follower: userId, following: params.followId}).count();
+  const existingCount = await UserFollowUser.find({follower: userId, following: params.followId}).countDocuments();
   if (existingCount > 0) {
     return apiError(BAD_REQUEST);
   }
@@ -96,13 +96,13 @@ exports.follow = async function(params) {
 exports.unfollow = async function(params) {
   const userId = getUserId(params.token);
 
-  const unfollowCount = await User.find({_id: params.unfollowId}).count();
+  const unfollowCount = await User.find({_id: params.unfollowId}).countDocuments();
   if (unfollowCount === 0) {
     return apiError(NOT_FOUND);
   }
 
   // if not following unfollowId
-  const followRelationCount = await UserFollowUser.find({follower: userId, following: params.unfollowId}).count();
+  const followRelationCount = await UserFollowUser.find({follower: userId, following: params.unfollowId}).countDocuments();
   if (followRelationCount === 0) {
     return apiError(FORBIDDEN);
   }
