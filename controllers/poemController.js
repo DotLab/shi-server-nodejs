@@ -296,7 +296,7 @@ exports.listingQuery = async function(params) {
   // limit
   query = query.limit(params.limit);
 
-  const res = await query.lean().exec();
+  const res = await query.exec();
   if (!tokenService.checkTokenValid(params.token)) {
     return apiSuccess(res);
   }
