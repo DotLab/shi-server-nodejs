@@ -61,7 +61,7 @@ exports.listingQuery = async function(params) {
   const counts = await Promise.all(res.map((x) =>
     UserFollowUser.find({
       follower: userId, following: x._id,
-    }).count()().exec()
+    }).count().exec()
   ));
 
   counts.forEach((count, i) => {
@@ -82,7 +82,7 @@ exports.poems = async function(params) {
       const counts = await Promise.all(poems.map((x) =>
         UserLikePoem.find({
           userId: userId, poemId: x._id,
-        }).count()().exec()
+        }).count().exec()
       ));
       counts.forEach((count, i) => {
         poems[i].liked = count === 0 ? false : true;
@@ -95,7 +95,7 @@ exports.poems = async function(params) {
       const counts = await Promise.all(poems.map((x) =>
         UserLikePoem.find({
           userId: userId, poemId: x._id,
-        }).count()().exec()
+        }).count().exec()
       ));
       counts.forEach((count, i) => {
         poems[i].liked = count === 0 ? false : true;
@@ -191,7 +191,7 @@ exports.followStatus = async function(params) {
   const counts = await Promise.all(params.userIds.map((x) =>
     UserFollowUser.find({
       follower: userId, following: x,
-    }).count()().exec()
+    }).count().exec()
   ));
   counts.forEach((count, i) => {
     arr[i] = count === 0 ? false : true;
