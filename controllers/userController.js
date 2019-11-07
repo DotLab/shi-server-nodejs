@@ -5,7 +5,7 @@ const {createToken, getUserId} = require('../services/tokenService');
 const {FORBIDDEN, NOT_FOUND, BAD_REQUEST} = require('./utils');
 
 exports.register = async function(params) {
-  const existingUserCount = await User.count()({
+  const existingUserCount = await User.countDocuments()({
     $or: [{userName: params.userName}, {email: params.email}],
   });
 
