@@ -5,7 +5,7 @@ const {createToken, getUserId} = require('../services/tokenService');
 const {FORBIDDEN, NOT_FOUND, BAD_REQUEST} = require('./utils');
 
 exports.register = async function(params) {
-  const existingUserCount = await User.countDocuments({
+  const existingUserCount = await User.count()({
     $or: [{userName: params.userName}, {email: params.email}],
   });
 
@@ -67,13 +67,13 @@ exports.changePassword = async function(params) {
 exports.follow = async function(params) {
   const userId = getUserId(params.token);
 
-  const followingCount = await User.find({_id: params.followId}).countDocuments();
+  const followingCount = await User.find({_id: params.followId}).count()();
   if (followingCount === 0) {
     return apiError(NOT_FOUND);
   }
 
   // If already following followId
-  const existingCount = await UserFollowUser.find({follower: userId, following: params.followId}).countDocuments();
+  const existingCount = await UserFollowUser.find({follower: userId, following: params.followId}).count()();
   if (existingCount > 0) {
     return apiError(BAD_REQUEST);
   }
@@ -96,13 +96,13 @@ exports.follow = async function(params) {
 exports.unfollow = async function(params) {
   const userId = getUserId(params.token);
 
-  const unfollowCount = await User.find({_id: params.unfollowId}).countDocuments();
+  const unfollowCount = await User.find({_id: params.unfollowId}).count()();
   if (unfollowCount === 0) {
     return apiError(NOT_FOUND);
   }
 
   // if not following unfollowId
-  const followRelationCount = await UserFollowUser.find({follower: userId, following: params.unfollowId}).countDocuments();
+  const followRelationCount = await UserFollowUser.find({follower: userId, following: params.unfollowId}).count()();
   if (followRelationCount === 0) {
     return apiError(FORBIDDEN);
   }
