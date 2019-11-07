@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const {FILTER_ALL, FILTER_FOLLOWING} = require('./utils');
 const tokenService = require('../services/tokenService');
+const UserLikePoem = require('../models/UserLikePoem');
 
 exports.listingQuery = async function(params) {
   let query = User.find({}).select('id userName displayName followingCount followerCount lastActiveDate viewCount');
@@ -60,7 +61,7 @@ exports.listingQuery = async function(params) {
   const counts = await Promise.all(res.map((x) =>
     UserFollowUser.find({
       follower: userId, following: x._id,
-    }).count().exec()
+    }).countDocuments().exec()
   ));
 
   counts.forEach((count, i) => {
@@ -76,11 +77,30 @@ exports.poems = async function(params) {
     const userId = tokenService.getUserId(params.token);
     // if user is target user, find all poems
     if (userId === params.poetId) {
-      const poems = await Poem.find({authorId: userId}).sort({writtenDate: -1}).exec();
+      const poems = await Poem.find({authorId: userId}).sort({writtenDate: -1}).lean().exec();
+
+      const counts = await Promise.all(poems.map((x) =>
+        UserLikePoem.find({
+          userId: userId, poemId: x._id,
+        }).countDocuments().exec()
+      ));
+      counts.forEach((count, i) => {
+        poems[i].liked = count === 0 ? false : true;
+      });
+
       return apiSuccess(poems);
     } else {
       // else find all public and community poems
-      const poems = await Poem.find({authorId: params.poetId, visibility: {$in: [PUBLIC, COMMUNITY]}}).sort({writtenDate: -1});
+      const poems = await Poem.find({authorId: params.poetId, visibility: {$in: [PUBLIC, COMMUNITY]}}).sort({writtenDate: -1}).lean().exec();
+      const counts = await Promise.all(poems.map((x) =>
+        UserLikePoem.find({
+          userId: userId, poemId: x._id,
+        }).countDocuments().exec()
+      ));
+      counts.forEach((count, i) => {
+        poems[i].liked = count === 0 ? false : true;
+      });
+
       return apiSuccess(poems);
     }
   }
@@ -171,7 +191,7 @@ exports.followStatus = async function(params) {
   const counts = await Promise.all(params.userIds.map((x) =>
     UserFollowUser.find({
       follower: userId, following: x,
-    }).count().exec()
+    }).countDocuments().exec()
   ));
   counts.forEach((count, i) => {
     arr[i] = count === 0 ? false : true;
