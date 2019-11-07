@@ -135,6 +135,6 @@ exports.updateLastActiveDate = function(userId) {
 
 exports.detail = async function(params) {
   const userId = getUserId(params.token);
-  const user = await User.findById(userId).select('id userName displayName followingCount followerCount lastActive viewCount');
+  const user = await User.findById(userId).select('id displayName followingCount followerCount lastActive viewCount');
   return apiSuccess(user);
 };
