@@ -2,7 +2,7 @@ const express = require('express');
 // eslint-disable-next-line new-cap
 const router = express.Router();
 const poemController = require('../../controllers/poemController');
-const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID} = require('./utils.js');
+const {createTypeChecker, createTokenChecker, STRING, OBJECT_ID, NUMBER} = require('./utils.js');
 
 router.post('/create', createTypeChecker({
   'token': STRING,
@@ -134,12 +134,48 @@ router.post('/comment/delete', createTypeChecker({
 router.post('/likeStatus', createTypeChecker({
   'token': STRING,
   'poemIds': [OBJECT_ID],
-}), async (req, res) => {
+}), createTokenChecker(), async (req, res) => {
   const token = req.body.token;
   const poemIds = req.body.poemIds;
 
   res.json(await poemController.getLikeStatus({
     token, poemIds,
+  }));
+});
+
+router.post('/home', createTypeChecker({
+  'filter': STRING,
+  '-sort': STRING,
+  '-order': STRING,
+  'limit': NUMBER,
+  'skip': NUMBER,
+  '-search': STRING,
+}), async (req, res) => {
+  const token = req.body.token;
+  const filter = req.body.filter;
+  const sort = req.body.sort;
+  const limit = req.body.limit;
+  const skip = req.body.skip;
+  const order = req.body.order;
+  const search = (req.body.search === '' ? undefined : req.body.search);
+
+  res.json(await poemController.listingQuery({
+    token, filter, sort, order, limit, skip,
+    search,
+  }));
+});
+
+router.post('/comment/list', createTypeChecker({
+  'token': STRING,
+  'poemId': OBJECT_ID,
+  'limit': NUMBER,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+  const poemId = req.body.poemId;
+  const limit = req.body.limit;
+
+  res.json(await poemController.listComment({
+    token, poemId, limit,
   }));
 });
 

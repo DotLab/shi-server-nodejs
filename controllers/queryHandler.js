@@ -31,3 +31,27 @@ exports.handleSort = function(sort, order, query) {
 
   throw new Error('Invalid input');
 };
+
+exports.handlePoemSort = function(sort, order, query) {
+  if (sort) {
+    if (order !== QUERY_ASC && order !== QUERY_DESC) {
+      throw new Error();
+    }
+  } else {
+    query = query.sort({viewCount: -1});
+    return;
+  }
+
+  if (sort === QUERY_VIEWS) {
+    query = (order === QUERY_DESC ? query.sort({viewCount: -1}) : query.sort({viewCount: 1}));
+    return;
+  } else if (sort === QUERY_LIKES) {
+    query = (order === QUERY_DESC ? query.sort({likeCount: -1}) : query.sort({likeCount: 1}));
+    return;
+  } else if (sort === QUERY_DATE) {
+    query = (order === QUERY_DESC ? query.sort({writtenDate: -1}) : query.sort({writtenDate: 1}));
+    return;
+  }
+
+  throw new Error();
+};

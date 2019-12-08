@@ -1,6 +1,8 @@
 const Poem = require('../models/Poem');
+const Comment = require('../models/Comment');
 const UserLikePoem = require('../models/UserLikePoem');
 const UserVisitPoem = require('../models/UserVisitPoem');
+const UserFollowUser = require('../models/UserFollowUser');
 const User = require('../models/User');
 const {apiError, apiSuccess, FORBIDDEN, NOT_FOUND, BAD_REQUEST, UNAUTHORIZED} = require('./utils');
 const {PUBLIC, COMMUNITY} = require('./utils');
@@ -8,6 +10,8 @@ const tokenService = require('../services/tokenService');
 const userController = require('./userController');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
+const {FILTER_ALL, FILTER_FOLLOWING} = require('./utils');
+const {handlePoemSort} = require('./queryHandler');
 
 exports.create = async function(params) {
   const userId = tokenService.getUserId(params.token);
@@ -205,6 +209,30 @@ exports.deleteComment = async function(params) {
   return apiSuccess();
 };
 
+exports.listComment = async function(params) {
+  const count = await Poem.find({_id: params.poemId}).count();
+  if (count === 0) {
+    return apiError(BAD_REQUEST);
+  }
+
+  const comments = await Comment.find({poemId: params.poemId}).limit(params.limit).lean().exec();
+  const userId = tokenService.getUserId(params.token);
+
+  comments.forEach((comment) => {
+    comment.isOwner = (comment.poemAuthorId == userId || comment.commentAuthorId == userId) ? true : false;
+  });
+
+  const commentAuthorNames = await Promise.all(comments.map((x) => {
+    return User.findById(x.commentAuthorId).select('displayName').exec();
+  }));
+
+  commentAuthorNames.forEach((name, i) => {
+    comments[i].commentAuthorName = name.displayName;
+  });
+
+  return apiSuccess(comments);
+};
+
 exports.getLikeStatus = async function(params) {
   const userId = tokenService.getUserId(params.token);
   const arr = [];
@@ -219,4 +247,91 @@ exports.getLikeStatus = async function(params) {
   });
 
   return apiSuccess(arr);
+};
+
+exports.listingQuery = async function(params) {
+  let query = Poem.find({});
+
+  // filter
+  if (params.filter === FILTER_FOLLOWING) {
+    if (!tokenService.checkTokenValid(params.token)) {
+      return apiError(FORBIDDEN);
+    }
+    const userId = tokenService.getUserId(params.token);
+    // poemFollowingFilter(userId, query);
+    query = UserFollowUser.aggregate([
+      {$match: {follower: new ObjectId(userId)}},
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'following',
+          foreignField: '_id',
+          as: 'follow',
+        },
+      },
+      {
+        $unwind: {path: '$follow'},
+      },
+      {
+        $replaceWith: '$follow',
+      },
+      {
+        $lookup: {
+          from: 'poems',
+          localField: '_id',
+          foreignField: 'authorId',
+          as: 'poems',
+        },
+      },
+      {
+        $unwind: {path: '$poems'},
+      },
+      {
+        $replaceWith: '$poems',
+      },
+      {$match:
+        {visibility: {$in: [PUBLIC, COMMUNITY]}},
+      },
+    ]);
+  } else if (params.filter === FILTER_ALL) {
+    query = Poem.find({visibility: {$in: [PUBLIC]}});
+  } else {
+    return apiError(BAD_REQUEST);
+  }
+
+  // search
+  if (params.search) {
+    query = query.find({title: params.search});
+  }
+
+  // sort and order
+  try {
+    handlePoemSort(params.sort, params.order, query);
+  } catch (error) {
+    return apiError(BAD_REQUEST);
+  }
+
+  // skip
+  query = query.skip(params.skip);
+
+  // limit
+  query = query.limit(params.limit);
+
+  const res = await query.exec();
+  if (!tokenService.checkTokenValid(params.token)) {
+    return apiSuccess(res);
+  }
+
+  const userId = tokenService.getUserId(params.token);
+  const counts = await Promise.all(res.map((x) => {
+    return UserLikePoem.find({
+      userId: userId, poemId: x._id,
+    }).count().exec();
+  }));
+
+  counts.forEach((count, i) => {
+    res[i].liked = count === 0 ? false : true;
+  });
+
+  return apiSuccess(res);
 };
