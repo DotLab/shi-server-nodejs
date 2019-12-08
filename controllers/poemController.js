@@ -1,4 +1,5 @@
 const Poem = require('../models/Poem');
+const Comment = require('../models/Comment');
 const UserLikePoem = require('../models/UserLikePoem');
 const UserVisitPoem = require('../models/UserVisitPoem');
 const UserFollowUser = require('../models/UserFollowUser');
@@ -206,6 +207,30 @@ exports.deleteComment = async function(params) {
   ]);
 
   return apiSuccess();
+};
+
+exports.listComment = async function(params) {
+  const count = await Poem.find({_id: params.poemId}).count();
+  if (count === 0) {
+    return apiError(BAD_REQUEST);
+  }
+
+  const comments = await Comment.find({poemId: params.poemId}).limit(params.limit).lean().exec();
+  const userId = tokenService.getUserId(params.token);
+
+  comments.forEach((comment) => {
+    comment.isOwner = (comment.poemAuthorId == userId || comment.commentAuthorId == userId) ? true : false;
+  });
+
+  const commentAuthorNames = await Promise.all(comments.map((x) => {
+    return User.findById(x.commentAuthorId).select('displayName').exec();
+  }));
+
+  commentAuthorNames.forEach((name, i) => {
+    comments[i].commentAuthorName = name.displayName;
+  });
+
+  return apiSuccess(comments);
 };
 
 exports.getLikeStatus = async function(params) {

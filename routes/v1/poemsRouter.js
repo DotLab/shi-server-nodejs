@@ -165,4 +165,18 @@ router.post('/home', createTypeChecker({
   }));
 });
 
+router.post('/comment/list', createTypeChecker({
+  'token': STRING,
+  'poemId': OBJECT_ID,
+  'limit': NUMBER,
+}), createTokenChecker(), async (req, res) => {
+  const token = req.body.token;
+  const poemId = req.body.poemId;
+  const limit = req.body.limit;
+
+  res.json(await poemController.listComment({
+    token, poemId, limit,
+  }));
+});
+
 module.exports = router;
