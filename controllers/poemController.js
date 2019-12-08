@@ -115,9 +115,6 @@ exports.unlike = async function(params) {
 
 exports.visit = async function(params) {
   const userId = tokenService.getUserId(params.token);
-  if (!userId) {
-    return apiSuccess();
-  }
   const poemCount = await Poem.find({_id: params.poemId});
   if (poemCount === 0) {
     return apiError(NOT_FOUND);
