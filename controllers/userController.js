@@ -119,6 +119,12 @@ exports.unfollow = async function(params) {
   return apiSuccess();
 };
 
+exports.detail = async function(params) {
+  const userId = getUserId(params.token);
+  const user = await User.findById(userId).select('id userName displayName followingCount followerCount lastActive viewCount');
+  return apiSuccess(user);
+};
+
 exports.updateLastActiveDate = function(userId) {
   User.findByIdAndUpdate(userId, {
     $set: {
