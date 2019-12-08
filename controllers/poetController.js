@@ -77,7 +77,7 @@ exports.poems = async function(params) {
     const userId = tokenService.getUserId(params.token);
     // if user is target user, find all poems
     if (userId === params.poetId) {
-      const poems = await Poem.find({authorId: userId}).sort({writtenDate: -1}).exec();
+      const poems = await Poem.find({authorId: userId}).sort({writtenDate: -1}).lean().exec();
 
       const counts = await Promise.all(poems.map((x) =>
         UserLikePoem.find({
