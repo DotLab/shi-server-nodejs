@@ -91,7 +91,16 @@ exports.poems = async function(params) {
       return apiSuccess(poems);
     } else {
       // else find all public and community poems
-      const poems = await Poem.find({authorId: params.poetId, visibility: {$in: [PUBLIC, COMMUNITY]}}).sort({writtenDate: -1});
+      const poems = await Poem.find({authorId: params.poetId, visibility: {$in: [PUBLIC, COMMUNITY]}}).sort({writtenDate: -1}).lean().exec();
+      const counts = await Promise.all(poems.map((x) =>
+        UserLikePoem.find({
+          userId: userId, poemId: x._id,
+        }).countDocuments().exec()
+      ));
+      counts.forEach((count, i) => {
+        poems[i].liked = count === 0 ? false : true;
+      });
+
       return apiSuccess(poems);
     }
   }
