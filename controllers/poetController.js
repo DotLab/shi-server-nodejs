@@ -8,7 +8,6 @@ const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const {FILTER_ALL, FILTER_FOLLOWING} = require('./utils');
 const tokenService = require('../services/tokenService');
-const UserLikePoem = require('../models/UserLikePoem');
 
 exports.listingQuery = async function(params) {
   let query = User.find({}).select('id userName displayName followingCount followerCount lastActiveDate viewCount');
@@ -78,7 +77,6 @@ exports.poems = async function(params) {
     // if user is target user, find all poems
     if (userId === params.poetId) {
       const poems = await Poem.find({authorId: userId}).sort({writtenDate: -1}).exec();
-
       return apiSuccess(poems);
     } else {
       // else find all public and community poems
