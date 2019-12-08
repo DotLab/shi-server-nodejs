@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/DotLab/shi-server-nodejs#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "eslint": "^6.5.1",
     "eslint-config-google": "^0.14.0",
     "express": "^4.17.1",

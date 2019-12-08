@@ -165,7 +165,7 @@ router.post('/home', createTypeChecker({
   }));
 });
 
-router.post('/comment-list', createTypeChecker({
+router.post('/comment/list', createTypeChecker({
   'token': STRING,
   'poemId': OBJECT_ID,
   'limit': NUMBER,
@@ -174,7 +174,7 @@ router.post('/comment-list', createTypeChecker({
   const poemId = req.body.poemId;
   const limit = req.body.limit;
 
-  res.json(await poemController.commentList({
+  res.json(await poemController.listComment({
     token, poemId, limit,
   }));
 });

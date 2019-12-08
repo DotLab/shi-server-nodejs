@@ -8,7 +8,7 @@ const QUERY_ALPHABETICAL = 'alphabetical';
 exports.handleSort = function(sort, order, query) {
   if (sort) {
     if (order !== QUERY_ASC && order !== QUERY_DESC) {
-      throw new Error();
+      throw new Error('Invalid query sort');
     }
   } else {
     query = query.sort({viewCount: -1});
@@ -29,7 +29,7 @@ exports.handleSort = function(sort, order, query) {
     return;
   }
 
-  throw new Error();
+  throw new Error('Invalid input');
 };
 
 exports.handlePoemSort = function(sort, order, query) {
