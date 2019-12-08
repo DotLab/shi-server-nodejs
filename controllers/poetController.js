@@ -60,7 +60,7 @@ exports.listingQuery = async function(params) {
   const counts = await Promise.all(res.map((x) =>
     UserFollowUser.find({
       follower: userId, following: x._id,
-    }).count().exec()
+    }).countDocuments().exec()
   ));
 
   counts.forEach((count, i) => {
@@ -171,7 +171,7 @@ exports.followStatus = async function(params) {
   const counts = await Promise.all(params.userIds.map((x) =>
     UserFollowUser.find({
       follower: userId, following: x,
-    }).count().exec()
+    }).countDocuments().exec()
   ));
   counts.forEach((count, i) => {
     arr[i] = count === 0 ? false : true;

@@ -68,12 +68,12 @@ exports.delete = async function(params) {
 
 exports.like = async function(params) {
   const userId = tokenService.getUserId(params.token);
-  const poemCount = await Poem.find({_id: params.poemId}).count();
+  const poemCount = await Poem.find({_id: params.poemId}).countDocuments();
   if (poemCount === 0) {
     return apiError(NOT_FOUND);
   }
   // If the user already liked poemId
-  const existingCount = await UserLikePoem.find({userId: userId, poemId: params.poemId}).count();
+  const existingCount = await UserLikePoem.find({userId: userId, poemId: params.poemId}).countDocuments();
   if (existingCount > 0) {
     return apiError(BAD_REQUEST);
   }
@@ -98,7 +98,7 @@ exports.unlike = async function(params) {
     return apiError(NOT_FOUND);
   }
   // If the user did not like poem
-  const likeRelationCount = await UserLikePoem.find({userId: userId, poemId: params.poemId}).count();
+  const likeRelationCount = await UserLikePoem.find({userId: userId, poemId: params.poemId}).countDocuments();
   if (likeRelationCount === 0) {
     return apiError(BAD_REQUEST);
   }
@@ -120,7 +120,7 @@ exports.visit = async function(params) {
     return apiError(NOT_FOUND);
   }
   // If already visited poemId
-  const existingCount = await UserVisitPoem.find({userId: userId, poemId: params.poemId}).count();
+  const existingCount = await UserVisitPoem.find({userId: userId, poemId: params.poemId}).countDocuments();
   if (existingCount > 0) {
     return apiSuccess();
   }
@@ -240,7 +240,7 @@ exports.getLikeStatus = async function(params) {
   const counts = await Promise.all(params.poemIds.map((x) =>
     UserLikePoem.find({
       poemId: x, userId: userId,
-    }).count().exec()
+    }).countDocuments().exec()
   ));
   counts.forEach((count, i) => {
     arr[i] = count === 0 ? false : true;
@@ -326,7 +326,7 @@ exports.listingQuery = async function(params) {
   const counts = await Promise.all(res.map((x) => {
     return UserLikePoem.find({
       userId: userId, poemId: x._id,
-    }).count().exec();
+    }).countDocuments().exec();
   }));
 
   counts.forEach((count, i) => {
