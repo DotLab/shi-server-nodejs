@@ -210,7 +210,7 @@ exports.deleteComment = async function(params) {
 };
 
 exports.listComment = async function(params) {
-  const count = await Poem.find({_id: params.poemId}).count();
+  const count = await Poem.find({_id: params.poemId}).countDocuments();
   if (count === 0) {
     return apiError(BAD_REQUEST);
   }
@@ -223,11 +223,12 @@ exports.listComment = async function(params) {
   });
 
   const commentAuthorNames = await Promise.all(comments.map((x) => {
-    return User.findById(x.commentAuthorId).select('displayName').exec();
+    return User.findById(x.commentAuthorId).select('displayName userName').exec();
   }));
 
   commentAuthorNames.forEach((name, i) => {
     comments[i].commentAuthorName = name.displayName;
+    comments[i].commentAuthorUserName = name.userName;
   });
 
   return apiSuccess(comments);
@@ -299,11 +300,6 @@ exports.listingQuery = async function(params) {
     return apiError(BAD_REQUEST);
   }
 
-  // search
-  if (params.search) {
-    query = query.find({title: params.search});
-  }
-
   // sort and order
   try {
     handlePoemSort(params.sort, params.order, query);
@@ -317,7 +313,15 @@ exports.listingQuery = async function(params) {
   // limit
   query = query.limit(params.limit);
 
-  const res = await query.exec();
+  let res = await query.exec();
+
+  // search
+  if (params.search) {
+    res = res.filter((x) => {
+      return x.title === params.search;
+    });
+  }
+
   if (!tokenService.checkTokenValid(params.token)) {
     return apiSuccess(res);
   }
