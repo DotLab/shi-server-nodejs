@@ -294,7 +294,7 @@ exports.listingQuery = async function(params) {
       },
     ]);
   } else if (params.filter === FILTER_ALL) {
-    query = Poem.find({visibility: {$in: [PUBLIC]}});
+    query = Poem.find({visibility: {$in: [PUBLIC]}}).lean();
   } else {
     return apiError(BAD_REQUEST);
   }
@@ -331,6 +331,16 @@ exports.listingQuery = async function(params) {
 
   counts.forEach((count, i) => {
     res[i].liked = count === 0 ? false : true;
+  });
+
+  const followingStatus = await Promise.all(res.map((x) => {
+    return UserFollowUser.find({
+      follower: userId, following: x.authorId,
+    }).countDocuments().exec();
+  }));
+
+  followingStatus.forEach((count, i) => {
+    res[i].isFollowing = count === 0 ? false : true;
   });
 
   return apiSuccess(res);
